@@ -401,6 +401,34 @@ sudo systemctl enable --now docker
                 </div>
             </section>
 
+            <!-- SECTION 8: ACTIVE API DAEMON & SECURITY -->
+            <section id="api-daemon-details" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="cpu" class="text-cyan-400"></i> 8. Live API Daemon Deployment (Phase 2 Completed)
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    We deployed the live production API daemon using a Python **FastAPI** service managed by systemd, running on port **`8086`** to run alongside the existing stats server.
+                </p>
+                
+                <div class="space-y-4">
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-2 text-left text-xs leading-relaxed">
+                        <span class="font-bold text-white block uppercase tracking-wider text-[10px]">🔒 SECURITY ARCHITECTURE BEST PRACTICES:</span>
+                        <ul class="list-disc pl-4 space-y-1 text-neutral-400">
+                            <li>**Shell Injection Shielding:** Command operations use system argument arrays (`subprocess.run(["wg", "syncconf", ...])`) without shell expansion (`shell=False`) to make arguments immune to user-injected characters.</li>
+                            <li>**JWT Auth Signatures:** Endpoints require secure JWT Bearer authorization headers to sign off admin tasks.</li>
+                            <li>**Non-Blocking Reloads:** Creating or deleting clients reloads configurations via `wg syncconf` without dropping active tunnels or breaking other users' tunnels.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-2 text-left text-xs font-mono">
+                        <span class="font-bold text-white block uppercase tracking-wider text-[10px]">💻 SERVICE DAEMON STATUS CHECK:</span>
+                        <span class="text-neutral-500 block">systemctl status maliknode-api.service</span>
+                        <span class="text-emerald-400 block">&bull; active (running)</span>
+                        <span class="text-zinc-500 block">Bound: http://127.0.0.1:8086</span>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 
