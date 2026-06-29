@@ -4,11 +4,215 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MalikNode — Authenticate</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.tailwindcss.com">
+async function submitOTP(e) {
+  e.preventDefault();
+  const code = document.getElementById('otpCode').value.trim();
+  const btn = document.getElementById('otpBtn');
+  const btnText = document.getElementById('otpBtnText');
+  const spinner = document.getElementById('otpSpinner');
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  spinner.classList.remove('hidden');
+
+  try {
+    const subdomain = pendingReg.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const res = await fetch("https://api.maliknode.app/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: pendingReg.email.split("@")[0],
+        password: pendingReg.password,
+        subdomain: subdomain || "user" + Math.floor(Math.random() * 1000),
+        email: pendingReg.email,
+        otp: code,
+        plan: "Starter",
+        region: "NYC"
+      })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      localStorage.setItem("mn_token", data.token);
+      showPanel('success');
+      runSuccessSteps();
+    } else {
+      showToast(data.detail || "Invalid code. Please try again.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    spinner.classList.add('hidden');
+  }
+}
+
+async function resendOTP() {
+  showToast("Resending code...");
+  try {
+    const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingReg.email })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      showToast("Verification code resent.");
+    } else {
+      showToast("Failed to resend code.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode') || 'login';
+  showPanel(mode);
+});
+</script>
+<script src="https://unpkg.com/lucide@latest">
+async function submitOTP(e) {
+  e.preventDefault();
+  const code = document.getElementById('otpCode').value.trim();
+  const btn = document.getElementById('otpBtn');
+  const btnText = document.getElementById('otpBtnText');
+  const spinner = document.getElementById('otpSpinner');
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  spinner.classList.remove('hidden');
+
+  try {
+    const subdomain = pendingReg.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const res = await fetch("https://api.maliknode.app/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: pendingReg.email.split("@")[0],
+        password: pendingReg.password,
+        subdomain: subdomain || "user" + Math.floor(Math.random() * 1000),
+        email: pendingReg.email,
+        otp: code,
+        plan: "Starter",
+        region: "NYC"
+      })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      localStorage.setItem("mn_token", data.token);
+      showPanel('success');
+      runSuccessSteps();
+    } else {
+      showToast(data.detail || "Invalid code. Please try again.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    spinner.classList.add('hidden');
+  }
+}
+
+async function resendOTP() {
+  showToast("Resending code...");
+  try {
+    const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingReg.email })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      showToast("Verification code resent.");
+    } else {
+      showToast("Failed to resend code.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode') || 'login';
+  showPanel(mode);
+});
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script>
 tailwind.config={theme:{extend:{fontFamily:{inter:['Inter','sans-serif']}}}}
+
+async function submitOTP(e) {
+  e.preventDefault();
+  const code = document.getElementById('otpCode').value.trim();
+  const btn = document.getElementById('otpBtn');
+  const btnText = document.getElementById('otpBtnText');
+  const spinner = document.getElementById('otpSpinner');
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  spinner.classList.remove('hidden');
+
+  try {
+    const subdomain = pendingReg.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const res = await fetch("https://api.maliknode.app/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: pendingReg.email.split("@")[0],
+        password: pendingReg.password,
+        subdomain: subdomain || "user" + Math.floor(Math.random() * 1000),
+        email: pendingReg.email,
+        otp: code,
+        plan: "Starter",
+        region: "NYC"
+      })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      localStorage.setItem("mn_token", data.token);
+      showPanel('success');
+      runSuccessSteps();
+    } else {
+      showToast(data.detail || "Invalid code. Please try again.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    spinner.classList.add('hidden');
+  }
+}
+
+async function resendOTP() {
+  showToast("Resending code...");
+  try {
+    const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingReg.email })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      showToast("Verification code resent.");
+    } else {
+      showToast("Failed to resend code.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode') || 'login';
+  showPanel(mode);
+});
 </script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -316,13 +520,6 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow-x:hid
 </div>
 
 <script>
-// Check query parameters to show signup or login panel initially
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get('mode') || 'login';
-  showPanel(mode);
-});
-
 lucide.createIcons();
 
 // ===== PARTICLES =====
@@ -352,24 +549,24 @@ function showPanel(panel) {
   const panels = { signup: 'signupPanel', login: 'loginPanel', otp: 'otpPanel', success: 'successPanel' };
   Object.values(panels).forEach(id => {
     const el = document.getElementById(id);
-    el.classList.add('hidden');
-    el.classList.remove('slide-in', 'slide-out');
+    if (el) {
+      el.classList.add('hidden');
+      el.classList.remove('slide-in', 'slide-out');
+    }
   });
   const target = document.getElementById(panels[panel]);
-  target.classList.remove('hidden');
-  target.classList.add('slide-in');
-  requestAnimationFrame(() => {
-    target.classList.remove('slide-in');
-    document.getElementById('authFooter').style.display = panel === 'success' ? 'none' : 'flex';
-  });
-  // Check query parameters to show signup or login panel initially
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get('mode') || 'login';
-  showPanel(mode);
-});
-
-lucide.createIcons();
+  if (target) {
+    target.classList.remove('hidden');
+    target.classList.add('slide-in');
+    requestAnimationFrame(() => {
+      target.classList.remove('slide-in');
+      const footer = document.getElementById('authFooter');
+      if (footer) {
+        footer.style.display = panel === 'success' ? 'none' : 'flex';
+      }
+    });
+  }
+  lucide.createIcons();
 }
 
 // ===== CHECKBOX =====
@@ -381,14 +578,7 @@ function togglePassword(id, btn) {
   const isPassword = input.type === 'password';
   input.type = isPassword ? 'text' : 'password';
   btn.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
-  // Check query parameters to show signup or login panel initially
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get('mode') || 'login';
-  showPanel(mode);
-});
-
-lucide.createIcons();
+  lucide.createIcons();
 }
 
 // ===== PASSWORD STRENGTH =====
@@ -427,14 +617,7 @@ function showToast(msg, type) {
   t.style.borderColor = type === 'error' ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)';
   t.style.background = type === 'error' ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)';
   t.style.color = type === 'error' ? '#ef4444' : '#22c55e';
-  // Check query parameters to show signup or login panel initially
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get('mode') || 'login';
-  showPanel(mode);
-});
-
-lucide.createIcons();
+  lucide.createIcons();
   t.style.transform = 'translateX(-50%) translateY(0)';
   t.style.opacity = '1';
   clearTimeout(toastTimer);
@@ -445,7 +628,6 @@ lucide.createIcons();
 }
 
 // ===== SIGNUP =====
-// Temporary fields cache for verification submission
 let pendingReg = { name: '', email: '', password: '' };
 
 async function handleSignup(e) {
@@ -473,7 +655,6 @@ async function handleSignup(e) {
   try {
     pendingReg = { name, email, password: pass };
     
-    // Call API to send OTP code
     const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -482,7 +663,10 @@ async function handleSignup(e) {
     const data = await res.json();
     if (res.ok && data.status === "success") {
       showToast(data.message);
-      document.getElementById('otpInstruct').textContent = `Verification code sent to ${email}`;
+      const instruct = document.getElementById('otpInstruct');
+      if (instruct) {
+        instruct.textContent = `Verification code sent to ${email}`;
+      }
       showPanel('otp');
     } else {
       showToast(data.detail || "Failed to send verification code", "error");
@@ -495,6 +679,101 @@ async function handleSignup(e) {
     spinner.classList.add('hidden');
   }
 }
+
+// ===== LOGIN =====
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+
+  const btn = document.getElementById('loginBtn');
+  const btnText = document.getElementById('loginBtnText');
+  const spinner = document.getElementById('loginSpinner');
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  spinner.classList.remove('hidden');
+
+  try {
+    const res = await fetch("https://api.maliknode.app/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: email.split("@")[0],
+        password: pass
+      })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      localStorage.setItem("mn_token", data.token);
+      showToast('Login successful! Redirecting...');
+      setTimeout(() => goToDashboard(), 1000);
+    } else {
+      showToast(data.detail || "Invalid login credentials", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    spinner.classList.add('hidden');
+  }
+}
+
+// ===== SOCIAL =====
+function socialSignup(provider) {
+  showToast(`Connecting to ${provider}...`);
+  setTimeout(() => {
+    showPanel('success');
+    runSuccessSteps();
+  }, 1500);
+}
+
+// ===== SUCCESS STEPS =====
+function runSuccessSteps() {
+  lucide.createIcons();
+  setTimeout(() => {
+    const icon = document.getElementById('step3Icon');
+    const text = document.getElementById('step3Text');
+    icon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-green-400"></i>';
+    icon.className = 'w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center';
+    text.textContent = 'Mesh network ready';
+    text.className = 'text-xs text-neutral-300';
+    lucide.createIcons();
+
+    const goBtn = document.getElementById('goDashboard');
+    goBtn.style.opacity = '1';
+    goBtn.style.pointerEvents = 'all';
+    lucide.createIcons();
+  }, 2500);
+}
+
+// ===== GO TO DASHBOARD =====
+function goToDashboard() {
+  document.body.style.transition = 'opacity .5s';
+  document.body.style.opacity = '0';
+  setTimeout(() => {
+    window.location.href = '/index.html'; return;
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#050505;font-family:Inter,sans-serif">
+        <div style="text-align:center;opacity:0;animation:fadeUp .8s ease-out forwards">
+          <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#a855f7,#3b82f6);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 0 40px rgba(59,130,246,0.3)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h1 style="font-size:28px;font-weight:600;margin-bottom:8px;letter-spacing:-0.02em">Dashboard Loaded</h1>
+          <p style="color:rgb(115,115,115);font-size:14px;font-weight:300">In production, this redirects to your MalikNode dashboard.</p>
+          <button onclick="location.reload()" style="margin-top:32px;background:#fff;color:#000;font-weight:500;font-size:13px;padding:12px 28px;border-radius:12px;border:none;cursor:pointer;font-family:Inter,sans-serif">Back to Auth</button>
+        </div>
+      </div>
+      <style>@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
+    `;
+  }, 500);
+}
+
+// ===== KEYBOARD NAV =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') document.body.classList.add('keyboard-nav');
+});
+document.addEventListener('mousedown', () => document.body.classList.remove('keyboard-nav'));
 
 async function submitOTP(e) {
   e.preventDefault();
@@ -558,122 +837,11 @@ async function resendOTP() {
   }
 }
 
-// ===== LOGIN =====
-async function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-
-  const btn = document.getElementById('loginBtn');
-  const btnText = document.getElementById('loginBtnText');
-  const spinner = document.getElementById('loginSpinner');
-  btn.disabled = true;
-  btnText.classList.add('hidden');
-  spinner.classList.remove('hidden');
-
-  try {
-    const res = await fetch("https://api.maliknode.app/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: email.split("@")[0],
-        password: pass
-      })
-    });
-    const data = await res.json();
-    if (res.ok && data.status === "success") {
-      localStorage.setItem("mn_token", data.token);
-      showToast('Login successful! Redirecting...');
-      setTimeout(() => goToDashboard(), 1000);
-    } else {
-      showToast(data.detail || "Invalid login credentials", "error");
-    }
-  } catch (err) {
-    showToast("Server connection error", "error");
-  } finally {
-    btn.disabled = false;
-    btnText.classList.remove('hidden');
-    spinner.classList.add('hidden');
-  }
-}
-
-// ===== SOCIAL =====
-function socialSignup(provider) {
-  showToast(`Connecting to ${provider}...`);
-  setTimeout(() => {
-    showPanel('success');
-    runSuccessSteps();
-  }, 1500);
-}
-
-// ===== SUCCESS STEPS =====
-function runSuccessSteps() {
-  // Check query parameters to show signup or login panel initially
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const mode = params.get('mode') || 'login';
   showPanel(mode);
 });
-
-lucide.createIcons();
-  setTimeout(() => {
-    const icon = document.getElementById('step3Icon');
-    const text = document.getElementById('step3Text');
-    icon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-green-400"></i>';
-    icon.className = 'w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center';
-    text.textContent = 'Mesh network ready';
-    text.className = 'text-xs text-neutral-300';
-    // Check query parameters to show signup or login panel initially
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get('mode') || 'login';
-  showPanel(mode);
-});
-
-lucide.createIcons();
-
-    const goBtn = document.getElementById('goDashboard');
-    goBtn.style.opacity = '1';
-    goBtn.style.pointerEvents = 'all';
-    // Check query parameters to show signup or login panel initially
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const mode = params.get('mode') || 'login';
-  showPanel(mode);
-});
-
-lucide.createIcons();
-  }, 2500);
-}
-
-// ===== GO TO DASHBOARD =====
-function goToDashboard() {
-  document.body.style.transition = 'opacity .5s';
-  document.body.style.opacity = '0';
-  setTimeout(() => {
-    window.location.href = '/index.html'; return;
-    // For demo, show a message
-    document.body.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#050505;font-family:Inter,sans-serif">
-        <div style="text-align:center;opacity:0;animation:fadeUp .8s ease-out forwards">
-          <div style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#a855f7,#3b82f6);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 0 40px rgba(59,130,246,0.3)">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <h1 style="font-size:28px;font-weight:600;margin-bottom:8px;letter-spacing:-0.02em">Dashboard Loaded</h1>
-          <p style="color:rgb(115,115,115);font-size:14px;font-weight:300">In production, this redirects to your MalikNode dashboard.</p>
-          <button onclick="location.reload()" style="margin-top:32px;background:#fff;color:#000;font-weight:500;font-size:13px;padding:12px 28px;border-radius:12px;border:none;cursor:pointer;font-family:Inter,sans-serif">Back to Auth</button>
-        </div>
-      </div>
-      <style>@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
-    `;
-  }, 500);
-}
-
-// ===== KEYBOARD NAV =====
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Tab') document.body.classList.add('keyboard-nav');
-});
-document.addEventListener('mousedown', () => document.body.classList.remove('keyboard-nav'));
 </script>
 </body>
 </html>
