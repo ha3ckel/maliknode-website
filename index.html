@@ -910,17 +910,17 @@
                 <div class="pricing-card reveal">
                     <div class="text-sm text-neutral-500 font-medium mb-2">Starter</div>
                     <div class="flex items-baseline gap-1 mb-1">
-                        <span class="text-4xl font-medium text-white">$0</span>
+                        <span class="text-4xl font-medium pricing-amount text-white" data-monthly="0" data-yearly="1">$0</span>
                         <span class="text-sm text-neutral-500">/mo</span>
                     </div>
-                    <p class="text-xs text-neutral-500 mb-8">Perfect for testing out</p>
-                    <button onclick="showToast('Free starter plan active!')" class="btn-secondary w-full justify-center text-sm mb-8">Get Started</button>
+                    <p class="text-xs text-neutral-500 mb-8 pricing-note" data-monthly="1-Month Free Trial" data-yearly="Billed $12/year">1-Month Free Trial</p>
+                    <button onclick="showToast('Starter free trial initiated!')" class="btn-secondary w-full justify-center text-sm mb-8">Get Started</button>
                     <ul class="space-y-3">
-                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>1 active device</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>2 active devices (Mesh enabled)</li>
                         <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Local DNS resolutions</li>
                         <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Unbound recursive resolve</li>
-                        <li class="flex items-center gap-3 text-sm text-neutral-500"><i data-lucide="x" class="w-4 h-4 text-neutral-600 shrink-0"></i>No remote VPN egress</li>
-                        <li class="flex items-center gap-3 text-sm text-neutral-500"><i data-lucide="x" class="w-4 h-4 text-neutral-600 shrink-0"></i>No custom dashboard access</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Portal dashboard access</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-500"><i data-lucide="x" class="w-4 h-4 text-neutral-600 shrink-0"></i>No remote VPN server egress</li>
                     </ul>
                 </div>
 
@@ -1094,6 +1094,7 @@
                     <h4 class="text-xs font-bold text-white uppercase tracking-wider">Resources</h4>
                     <ul class="space-y-2 text-xs text-gray-500">
                         <li><a href="https://dns.maliknode.app/" target="_blank" class="hover:text-white transition-colors">Free DNS Portal</a></li>
+                        <li><a href="/why-mesh.html" class="hover:text-white transition-colors">Why Use Mesh Network?</a></li>
                         <li><a href="#connect" class="hover:text-white transition-colors">Client Download Links</a></li>
                         <li><a href="#faq" class="hover:text-white transition-colors">FAQs</a></li>
                     </ul>

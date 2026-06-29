@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Use a Mesh Network — MalikNode</title>
+    <meta name="description" content="Understand the power of private peer-to-peer mesh networks. Interconnect your phones, laptops, and smart TVs securely from anywhere.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='%23E30613' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='rgba(227,%206,%2019,%200.2)' stroke='%23E30613' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: '#030303',
+                        'dark-alt': '#09090b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #030303; color: #fff; overflow-x: hidden; }
+        .glass {
+            background: rgba(15, 15, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .animated-logo-bg {
+            background: linear-gradient(135deg, #3b82f6, #ff6b35, #E30613, #3b82f6);
+            background-size: 300% 300%;
+            animation: gradientShift 6s ease infinite;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden min-h-screen flex flex-col justify-between grid-bg">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 h-20 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl animated-logo-bg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z" fill="rgba(227, 6, 19, 0.2)" stroke="#E30613" stroke-width="3"/>
+                        <path d="M38 50L46 58L62 42" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="font-display font-extrabold text-lg tracking-wider text-white">MALIK<span class="text-blue-500 font-extrabold">NODE</span></span>
+            </a>
+            <a href="/" class="text-sm font-medium text-neutral-400 hover:text-white transition-colors">Back to Home &rarr;</a>
+        </div>
+    </nav>
+
+    <!-- Main Content Guide -->
+    <main class="max-w-4xl mx-auto px-6 pt-32 pb-20 w-full space-y-12">
+        <div class="text-center space-y-4">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                <i data-lucide="network" class="w-3.5 h-3.5"></i>
+                Private Mesh Networking
+            </div>
+            <h1 class="text-4xl md:text-6xl font-display font-extrabold text-white leading-tight">
+                Why Use a Mesh Network?
+            </h1>
+            <p class="text-neutral-400 text-lg max-w-2xl mx-auto font-light">
+                Discover how MalikNode transforms your isolated devices into a secure, interconnected ecosystem from anywhere in the world.
+            </p>
+        </div>
+
+        <!-- Visual diagram mockup representation of mesh -->
+        <div class="p-8 rounded-3xl glass border border-white/5 bg-zinc-950/40 text-center relative overflow-hidden">
+            <!-- Topology Grid mockup -->
+            <div class="flex flex-wrap items-center justify-center gap-12 py-6 relative z-10">
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-white"><i data-lucide="monitor" class="w-6 h-6"></i></div>
+                    <span class="text-xs font-mono text-zinc-400 mt-2">MacBook (10.66.66.2)</span>
+                </div>
+                <div class="w-8 h-[2px] bg-dashed bg-zinc-800 hidden sm:block"></div>
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20"><i data-lucide="shield" class="w-8 h-8"></i></div>
+                    <span class="text-xs font-bold text-white mt-2">MalikNode Hub (10.66.66.1)</span>
+                </div>
+                <div class="w-8 h-[2px] bg-dashed bg-zinc-800 hidden sm:block"></div>
+                <div class="flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-white"><i data-lucide="smartphone" class="w-6 h-6"></i></div>
+                    <span class="text-xs font-mono text-zinc-400 mt-2">Phone (10.66.66.3)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Explanations -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="smartphone" class="text-blue-400"></i> Interconnect Your Devices
+                </h3>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Normally, your phone, laptop, and smart TV cannot talk to each other when they are on different Wi-Fi networks (e.g. phone on mobile data, TV on home broadband). MalikNode creates a secure virtual private LAN. All devices receive a secure static IP within the <span class="text-white font-mono bg-white/5 px-1 py-0.5 rounded">10.66.66.0/24</span> subnet.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="tv" class="text-emerald-400"></i> Access Smart TVs & NAS Remotely
+                </h3>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    By disabling Client Isolation, your devices can communicate directly. Stream media files, ssh into servers, or control smart home applications remotely just as if you were sitting on your living room couch.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="copy" class="text-purple-400"></i> Encrypted Offline File Sharing
+                </h3>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Transfer large files securely between your laptop and server without uploading them to public cloud storage providers. MalikNode routes traffic point-to-point via hardened WireGuard UDP protocols.
+                </p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="lock" class="text-cyan-400"></i> No Port-Forwarding Vulnerabilities
+                </h3>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Connecting to local resources doesn't require exposing public ports on your home router. MalikNode establishes outbound connections securely to our cloud relays, shielding your endpoints from botnet port scans.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-zinc-950/40 py-8 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <span>&copy; 2026 MalikNode VPN. All rights reserved.</span>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-xs text-neutral-500 font-mono">Gateway Systems Operational</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

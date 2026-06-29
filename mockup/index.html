@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MalikNode — Onboarding & Subnet Dashboard Mockup</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='%23E30613' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='rgba(227,%206,%2019,%200.2)' stroke='%23E30613' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: '#030303',
+                        'dark-alt': '#09090b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #030303; color: #fff; overflow-x: hidden; }
+        .glass {
+            background: rgba(15, 15, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .onboarding-step { display: none; }
+        .onboarding-step.active { display: block; animation: stepFade 0.5s ease-out; }
+        @keyframes stepFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+            backdrop-filter: blur(20px); border-radius: 14px; padding: 14px 24px;
+            display: flex; align-items: center; gap: 10px; z-index: 9999;
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            font-size: 14px; color: #22c55e;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden min-h-screen flex flex-col justify-between grid-bg">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span id="toast-msg">Success!</span>
+    </div>
+
+    <!-- Header Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 h-20 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="font-display font-extrabold text-lg tracking-wider text-white">MALIK<span class="text-blue-500">NODE</span> <span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-mono px-2 py-0.5 rounded ml-2">MOCKUP WORKFLOW</span></span>
+            </div>
+            <a href="/" class="text-xs text-neutral-400 hover:text-white transition-colors">&larr; Back to Landing Page</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-6 pt-28 pb-20 w-full flex-grow flex flex-col justify-center">
+
+        <!-- Top Walkthrough Banner -->
+        <div class="mb-8 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 text-xs text-blue-300 font-mono leading-relaxed max-w-4xl mx-auto w-full">
+            <div class="font-bold text-white mb-1 uppercase flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-blue-400"></i> Prototype Goal & Plan Sandbox</div>
+            This interactive demo maps the customer flow: selecting a plan (including the 2-peer free trial), setting a custom subdomain host, simulated server provisioning, and final subnet peer administration (incorporating custom client DNS rules and interactive mesh link testing).
+        </div>
+
+        <!-- ==================== STEP 1: CHOOSE PLAN ==================== -->
+        <div id="step-choose-plan" class="onboarding-step active max-w-5xl mx-auto w-full space-y-12">
+            <div class="text-center space-y-4">
+                <span class="text-xs font-mono text-neutral-400 font-semibold tracking-widest uppercase">Step 1 of 3</span>
+                <h2 class="text-3xl md:text-5xl font-display font-extrabold text-white">Select Your Gateway Plan</h2>
+                <p class="text-neutral-400 text-sm max-w-md mx-auto font-light">Choose the plan that fits your subnet requirements. Toggle annual billing to save.</p>
+                
+                <!-- Billing Toggle -->
+                <div class="flex items-center justify-center gap-4 mt-6">
+                    <span id="monthlyLabel" class="text-sm text-neutral-400">Monthly</span>
+                    <button onclick="toggleBillingMock()" id="billingToggleMock" class="relative w-12 h-7 rounded-full bg-white/10 border border-white/10 transition-colors">
+                        <div id="toggleDotMock" class="absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform"></div>
+                    </button>
+                    <span id="yearlyLabel" class="text-sm text-neutral-500">Yearly <span class="text-green-400 text-xs">-20%</span></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Starter Plan -->
+                <div class="p-6 rounded-3xl bg-zinc-900/50 border border-white/5 flex flex-col justify-between hover:border-blue-500/20 transition-all">
+                    <div class="space-y-4">
+                        <div class="text-sm text-neutral-500 font-medium">Starter</div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold text-white" id="plan-starter-price">$0</span>
+                            <span class="text-xs text-neutral-500">/mo</span>
+                        </div>
+                        <p class="text-xs text-neutral-500 font-mono" id="plan-starter-note">1-Month Free Trial</p>
+                        <hr class="border-white/5 my-4">
+                        <ul class="space-y-2.5 text-xs text-neutral-400">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> 2 active devices (Mesh enabled)</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Local DNS blocklists</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Central control dashboard</li>
+                        </ul>
+                    </div>
+                    <button onclick="selectPlan('Starter')" class="w-full h-11 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-medium text-xs mt-8 transition-all">Select Starter</button>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="p-6 rounded-3xl bg-zinc-900/80 border border-blue-500/30 flex flex-col justify-between hover:border-blue-500/50 transition-all relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider font-mono">Popular</div>
+                    <div class="space-y-4">
+                        <div class="text-sm text-blue-400 font-medium">Pro Mesh</div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold text-white" id="plan-pro-price">$6.99</span>
+                            <span class="text-xs text-neutral-500">/mo</span>
+                        </div>
+                        <p class="text-xs text-neutral-500 font-mono" id="plan-pro-note">Billed monthly</p>
+                        <hr class="border-white/5 my-4">
+                        <ul class="space-y-2.5 text-xs text-neutral-400">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Up to 5 connected devices</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Dedicated virtual server node</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Egress VPN traffic routing</li>
+                        </ul>
+                    </div>
+                    <button onclick="selectPlan('Pro Mesh')" class="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs mt-8 transition-all">Select Pro Mesh</button>
+                </div>
+
+                <!-- Team Plan -->
+                <div class="p-6 rounded-3xl bg-zinc-900/50 border border-white/5 flex flex-col justify-between hover:border-blue-500/20 transition-all">
+                    <div class="space-y-4">
+                        <div class="text-sm text-neutral-500 font-medium">Team Mesh</div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold text-white" id="plan-team-price">$14.99</span>
+                            <span class="text-xs text-neutral-500">/mo</span>
+                        </div>
+                        <p class="text-xs text-neutral-500 font-mono" id="plan-team-note">Billed monthly</p>
+                        <hr class="border-white/5 my-4">
+                        <ul class="space-y-2.5 text-xs text-neutral-400">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Up to 25 connected devices</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Custom DNS policies</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-3.5 h-3.5 text-green-400"></i> Dedicated priority support</li>
+                        </ul>
+                    </div>
+                    <button onclick="selectPlan('Team Mesh')" class="w-full h-11 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-medium text-xs mt-8 transition-all">Select Team Mesh</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== STEP 2: PROVISION SUBDOMAIN ==================== -->
+        <div id="step-provision" class="onboarding-step max-w-xl mx-auto w-full glass rounded-3xl p-6 sm:p-8 border border-white/10">
+            <div class="text-center space-y-3 mb-8">
+                <span class="text-xs font-mono text-neutral-400 font-semibold tracking-widest uppercase">Step 2 of 3</span>
+                <h2 class="text-2xl font-bold text-white">Configure Server Endpoint</h2>
+                <p class="text-xs text-neutral-400 font-light">Set up the dedicated URL address for your private gateway node.</p>
+            </div>
+
+            <div class="space-y-6 text-left">
+                <!-- Subdomain input -->
+                <div>
+                    <label class="block text-xs font-semibold text-neutral-400 mb-1.5 uppercase font-mono">Custom Server Subdomain</label>
+                    <div class="flex items-center bg-zinc-900 border border-white/10 rounded-xl px-4 py-3">
+                        <input type="text" id="target-subdomain" placeholder="e.g. musabnet" class="bg-transparent text-sm text-white focus:outline-none w-full font-mono">
+                        <span class="text-xs text-neutral-500 font-mono">.maliknode.app</span>
+                    </div>
+                </div>
+
+                <!-- Region select -->
+                <div>
+                    <label class="block text-xs font-semibold text-neutral-400 mb-1.5 uppercase font-mono">Primary Node Region (Gateway Relay)</label>
+                    <select id="target-region" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500">
+                        <option value="phx" selected>Phoenix, USA (Primary Host)</option>
+                        <option value="mum">Mumbai, India Relay (BOM-1)</option>
+                        <option value="lon">London, United Kingdom Relay (LDN-1)</option>
+                    </select>
+                </div>
+
+                <!-- Provision Progress -->
+                <div id="provision-progress-container" class="hidden space-y-2.5">
+                    <div class="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+                        <span id="progress-status-text">Creating WireGuard wg0 subnet...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                        <div id="progress-bar-fill" class="h-full bg-blue-500 w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <button onclick="startProvision()" id="btn-provision" class="w-full h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all mt-4">
+                    Provision Gateway Server
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== STEP 3: DYNAMIC DASHBOARD MOCKUP ==================== -->
+        <div id="step-dashboard" class="onboarding-step max-w-7xl mx-auto w-full space-y-8">
+            
+            <!-- Dashboard Top Meta -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/5">
+                <div>
+                    <span class="text-xs font-mono text-zinc-500 uppercase tracking-widest">Active Instance Node</span>
+                    <h2 class="text-3xl font-display font-extrabold text-white flex items-center gap-2">
+                        <span id="display-subdomain">abcd.maliknode.app</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-mono font-medium">RUNNING</span>
+                    </h2>
+                    <p class="text-xs text-neutral-400 font-light mt-1">Dedicated WireGuard subnet gateway provisioned on Phoenix host system.</p>
+                </div>
+
+                <!-- Server-level actions -->
+                <div class="flex items-center gap-2">
+                    <button onclick="triggerAction('Manage')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all">Manage Node</button>
+                    <button onclick="triggerAction('Migrate Region')" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white transition-all">Transfer Region</button>
+                    <button onclick="triggerAction('Delete')" class="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/10 text-xs font-semibold text-red-400 transition-all">Cancel Instance</button>
+                </div>
+            </div>
+
+            <!-- Stats Block -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-5 rounded-2xl bg-zinc-900/40 border border-white/5">
+                    <div class="text-[9px] text-zinc-500 uppercase tracking-wider font-mono mb-1">Subnet Range</div>
+                    <div class="text-sm font-semibold text-white font-mono">10.88.88.0/24</div>
+                </div>
+                <div class="p-5 rounded-2xl bg-zinc-900/40 border border-white/5">
+                    <div class="text-[9px] text-zinc-500 uppercase tracking-wider font-mono mb-1">Configured Peers</div>
+                    <div class="text-sm font-semibold text-white font-mono" id="mock-peer-count-label">2 Active Devices</div>
+                </div>
+                <div class="p-5 rounded-2xl bg-zinc-900/40 border border-white/5">
+                    <div class="text-[9px] text-zinc-500 uppercase tracking-wider font-mono mb-1">Region Endpoints</div>
+                    <div class="text-sm font-semibold text-white font-mono" id="display-region">Phoenix, USA</div>
+                </div>
+                <div class="p-5 rounded-2xl bg-zinc-900/40 border border-white/5">
+                    <div class="text-[9px] text-zinc-500 uppercase tracking-wider font-mono mb-1">Subnet Bandwidth</div>
+                    <div class="text-sm font-semibold text-emerald-400 font-mono" id="display-bandwidth">0.0 Kbps</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Split Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- LEFT SECTION: PEERS LISTING -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display font-bold text-xl text-white">Client Peer Nodes</h3>
+                        <button onclick="openAddPeerMockModal()" class="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition-all">Add Device Node</button>
+                    </div>
+
+                    <div id="mock-peers-container" class="space-y-4">
+                        <!-- MacBook Peer Card -->
+                        <div class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">
+                                        <i data-lucide="monitor" class="w-5 h-5 text-blue-400"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-white">Musab-MacBook</h4>
+                                        <p class="text-[10px] text-zinc-500 font-mono mt-0.5">VPN IP: 10.88.88.2 &bull; Active just now</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openConfigMock('Musab-MacBook', '10.88.88.2')" class="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-mono text-white transition-all">Get Conf / QR</button>
+                                    <button onclick="removeMockPeer(this)" class="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-[10px] font-mono text-red-400 transition-all">Remove</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-xs font-mono border-t border-white/5 pt-3 text-zinc-500">
+                                <div><span class="text-zinc-600">UPLOADED:</span> 1.42 GB</div>
+                                <div><span class="text-zinc-600">DOWNLOADED:</span> 8.16 GB</div>
+                            </div>
+                            <!-- Client-Specific AdGuard DNS controls -->
+                            <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] font-bold text-white uppercase tracking-wider font-mono block">Custom Client DNS Filtering Policy</span>
+                                    <span class="text-[9px] text-zinc-400 font-light block mt-0.5">Enable Parental Safeguards / SafeSearch blocks specifically for this peer node.</span>
+                                </div>
+                                <input type="checkbox" onchange="toggleClientFilter('Musab-MacBook', this)" class="w-4 h-4 rounded bg-zinc-800 text-blue-600 focus:ring-0">
+                            </div>
+                        </div>
+
+                        <!-- iPhone Peer Card -->
+                        <div class="p-5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">
+                                        <i data-lucide="smartphone" class="w-5 h-5 text-emerald-400"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-semibold text-white">iPhone-17</h4>
+                                        <p class="text-[10px] text-zinc-500 font-mono mt-0.5">VPN IP: 10.88.88.3 &bull; Active 3m ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="openConfigMock('iPhone-17', '10.88.88.3')" class="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-mono text-white transition-all">Get Conf / QR</button>
+                                    <button onclick="removeMockPeer(this)" class="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-[10px] font-mono text-red-400 transition-all">Remove</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-xs font-mono border-t border-white/5 pt-3 text-zinc-500">
+                                <div><span class="text-zinc-600">UPLOADED:</span> 480.2 MB</div>
+                                <div><span class="text-zinc-600">DOWNLOADED:</span> 3.12 GB</div>
+                            </div>
+                            <!-- Client-Specific AdGuard DNS controls -->
+                            <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 flex items-center justify-between">
+                                <div>
+                                    <span class="text-[10px] font-bold text-white uppercase tracking-wider font-mono block">Custom Client DNS Filtering Policy</span>
+                                    <span class="text-[9px] text-zinc-400 font-light block mt-0.5">Enable Parental Safeguards / SafeSearch blocks specifically for this peer node.</span>
+                                </div>
+                                <input type="checkbox" checked onchange="toggleClientFilter('iPhone-17', this)" class="w-4 h-4 rounded bg-zinc-800 text-blue-600 focus:ring-0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT SECTION: MESH VISUALIZER & GENERAL SETTINGS -->
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="font-display font-bold text-xl text-white">Subnet Mesh Topology</h3>
+                        <p class="text-xs text-neutral-400 font-light mt-1">Interactive network diagram showing peer connections.</p>
+                    </div>
+
+                    <!-- Mesh Graphic container -->
+                    <div class="p-6 rounded-2xl bg-zinc-900/60 border border-white/5 text-center relative overflow-hidden h-64 flex flex-col justify-between">
+                        <div class="flex-grow flex items-center justify-center relative">
+                            <!-- Background linking lines -->
+                            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 200 150">
+                                <line id="mesh-line-1" x1="40" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3"/>
+                                <line id="mesh-line-2" x1="160" y1="90" x2="100" y2="40" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3"/>
+                                <line id="mesh-line-3" x1="40" y1="90" x2="160" y2="90" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.3"/>
+                            </svg>
+
+                            <!-- Gateway Node -->
+                            <div class="absolute" style="top:10%; left:43%;">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-lg"><i data-lucide="shield" class="w-4 h-4"></i></div>
+                            </div>
+
+                            <!-- MacBook Node -->
+                            <div class="absolute" style="bottom:20%; left:12%;">
+                                <div class="w-8 h-8 rounded-lg bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-300"><i data-lucide="monitor" class="w-4 h-4"></i></div>
+                            </div>
+
+                            <!-- iPhone Node -->
+                            <div class="absolute" style="bottom:20%; right:12%;">
+                                <div class="w-8 h-8 rounded-lg bg-zinc-800 border border-white/10 flex items-center justify-center text-zinc-300"><i data-lucide="smartphone" class="w-4 h-4"></i></div>
+                            </div>
+                        </div>
+
+                        <!-- Routing toggle controls -->
+                        <div class="p-3 bg-zinc-950 rounded-xl border border-white/5 text-left flex items-center justify-between">
+                            <div>
+                                <span class="text-[9px] font-bold text-white uppercase tracking-wider font-mono block">Client-to-Client Routing</span>
+                                <span class="text-[8px] text-zinc-400 block mt-0.5">Toggle peer communication (Mesh mode).</span>
+                            </div>
+                            <button onclick="toggleMeshRouting(this)" class="px-3 py-1 rounded bg-red-500/10 border border-red-500/20 text-[9px] font-mono text-red-400">ISOLATED</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL: ADD PEER DEVICE -->
+    <div id="addPeerMockModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="w-full max-w-md glass rounded-3xl p-6 border border-white/10 shadow-2xl relative">
+            <button onclick="closeAddPeerMockModal()" class="absolute top-6 right-6 text-neutral-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-display font-bold text-2xl text-white mb-2">Register Client Device</h3>
+            <p class="text-xs text-neutral-400 mb-6 font-light font-mono">Generates keys, static client IP, and config templates.</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-neutral-400 mb-1.5 uppercase font-mono">Device Label</label>
+                    <input type="text" id="new-peer-label-mock" placeholder="e.g. Home-SmartTV" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500 font-mono">
+                </div>
+                <button onclick="triggerAddPeerMock()" class="w-full h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all mt-4">
+                    Register Client Node
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SHOW CONFIG / QR / INVITE -->
+    <div id="confDisplayMockModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="w-full max-w-2xl glass rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative max-h-[85vh] overflow-y-auto">
+            <button onclick="closeConfigMockModal()" class="absolute top-6 right-6 text-neutral-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-display font-bold text-2xl text-white mb-2" id="modal-mock-title">Config Profile</h3>
+            <p class="text-xs text-neutral-400 mb-6 font-light">Import the config file, scan the QR code, or share the secure invite payload link.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Config Text -->
+                <div class="space-y-2 md:col-span-2">
+                    <label class="block text-xs font-semibold text-neutral-400 uppercase font-mono">WireGuard Config File (.conf)</label>
+                    <pre class="p-4 rounded-xl bg-zinc-950/80 border border-white/5 font-mono text-[9px] text-blue-400 space-y-1 text-left overflow-x-auto select-all" id="modal-mock-text">
+                    </pre>
+                </div>
+                
+                <!-- QR Code & Invite Link -->
+                <div class="space-y-4 flex flex-col items-center justify-center border border-white/5 rounded-xl p-4 bg-zinc-900/40">
+                    <div class="w-32 h-32 bg-white rounded-lg flex items-center justify-center p-2 relative shadow-lg">
+                        <div class="w-full h-full bg-slate-900 flex flex-wrap gap-[2px] p-1.5 rounded bg-cover" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'><rect x=\'10\' y=\'10\' width=\'20\' height=\'20\' fill=\'white\'/><rect x=\'70\' y=\'10\' width=\'20\' height=\'20\' fill=\'white\'/><rect x=\'10\' y=\'70\' width=\'20\' height=\'20\' fill=\'white\'/><rect x=\'30\' y=\'30\' width=\'40\' height=\'40\' fill=\'white\'/></svg>');">
+                        </div>
+                    </div>
+                    
+                    <button onclick="copyInviteLink()" class="w-full py-2 bg-white/5 hover:bg-white/10 text-[10px] font-mono text-zinc-300 rounded border border-white/10 flex items-center justify-center gap-1.5">
+                        <i data-lucide="link" class="w-3 h-3 text-blue-400"></i> Copy VPN Invite Link
+                    </button>
+                </div>
+            </div>
+            
+            <button onclick="downloadConfFileMock()" class="w-full h-12 flex items-center justify-center rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all mt-6">
+                Download Client .conf File
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-zinc-950/40 py-8 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <span>&copy; 2026 MalikNode VPN. Mockup Workspace.</span>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span class="text-xs text-neutral-500 font-mono">BOM-1 relay system operational</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Toast
+        let toastTimer;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Toggle Billing logic
+        let isYearlyMock = false;
+        function toggleBillingMock() {
+            isYearlyMock = !isYearlyMock;
+            const dot = document.getElementById('toggleDotMock');
+            const toggle = document.getElementById('billingToggleMock');
+            const mLabel = document.getElementById('monthlyLabel');
+            const yLabel = document.getElementById('yearlyLabel');
+
+            if (isYearlyMock) {
+                dot.style.transform = 'translateX(20px)';
+                toggle.style.background = 'rgba(59, 130, 246, 0.3)';
+                toggle.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+                mLabel.classList.remove('text-neutral-400');
+                mLabel.classList.add('text-neutral-500');
+                yLabel.classList.remove('text-neutral-500');
+                yLabel.classList.add('text-neutral-400');
+
+                // Adjust prices
+                document.getElementById('plan-starter-price').textContent = '$1';
+                document.getElementById('plan-starter-note').textContent = 'Billed $12/year (2 Clients)';
+                document.getElementById('plan-pro-price').textContent = '$5.49';
+                document.getElementById('plan-pro-note').textContent = 'Billed $65/year';
+                document.getElementById('plan-team-price').textContent = '$11.60';
+                document.getElementById('plan-team-note').textContent = 'Billed $140/year';
+            } else {
+                dot.style.transform = 'translateX(0)';
+                toggle.style.background = 'rgba(255,255,255,0.1)';
+                toggle.style.borderColor = 'rgba(255,255,255,0.1)';
+                mLabel.classList.remove('text-neutral-500');
+                mLabel.classList.add('text-neutral-400');
+                yLabel.classList.remove('text-neutral-400');
+                yLabel.classList.add('text-neutral-500');
+
+                // Adjust prices
+                document.getElementById('plan-starter-price').textContent = '$0';
+                document.getElementById('plan-starter-note').textContent = '1-Month Free Trial';
+                document.getElementById('plan-pro-price').textContent = '$6.99';
+                document.getElementById('plan-pro-note').textContent = 'Billed monthly';
+                document.getElementById('plan-team-price').textContent = '$14.99';
+                document.getElementById('plan-team-note').textContent = 'Billed monthly';
+            }
+        }
+
+        // Onboarding flow selectors
+        let selectedPlanName = "";
+        function selectPlan(planName) {
+            selectedPlanName = planName;
+            showToast(`Selected: ${planName}`);
+            
+            document.getElementById('step-choose-plan').classList.remove('active');
+            document.getElementById('step-provision').classList.add('active');
+        }
+
+        // Provisioning simulator
+        function startProvision() {
+            const subdomainVal = document.getElementById('target-subdomain').value.trim();
+            if (!subdomainVal) {
+                showToast("Error: Subdomain cannot be blank!");
+                return;
+            }
+
+            document.getElementById('btn-provision').disabled = true;
+            document.getElementById('provision-progress-container').classList.remove('hidden');
+
+            const bar = document.getElementById('progress-bar-fill');
+            const pct = document.getElementById('progress-percent');
+            const status = document.getElementById('progress-status-text');
+
+            const steps = [
+                { pct: 20, txt: "Configuring WireGuard wg0 interface..." },
+                { pct: 45, txt: "Registering client-isolation IPTables structures..." },
+                { pct: 75, txt: "Provisioning local AdGuard Home REST configs..." },
+                { pct: 95, txt: "Compiling Unbound upstream DNS keys..." },
+                { pct: 100, txt: "Deployment complete!" }
+            ];
+
+            let stepIdx = 0;
+            const timer = setInterval(() => {
+                if (stepIdx < steps.length) {
+                    bar.style.width = steps[stepIdx].pct + '%';
+                    pct.textContent = steps[stepIdx].pct + '%';
+                    status.textContent = steps[stepIdx].txt;
+                    stepIdx++;
+                } else {
+                    clearInterval(timer);
+                    showToast("Server Provisioned Successfully!");
+                    
+                    // Update display labels in dashboard
+                    document.getElementById('display-subdomain').textContent = subdomainVal + '.maliknode.app';
+                    const regionSelect = document.getElementById('target-region');
+                    document.getElementById('display-region').textContent = regionSelect.options[regionSelect.selectedIndex].text;
+
+                    // Proceed to dashboard
+                    document.getElementById('step-provision').classList.remove('active');
+                    document.getElementById('step-dashboard').classList.add('active');
+                }
+            }, 800);
+        }
+
+        // Action triggers
+        function triggerAction(action) {
+            showToast(`Action Triggered: ${action} instance settings.`);
+        }
+
+        // Peer Controls Modal
+        let activePeerName = "";
+        let activePeerIP = "";
+        let activePeerConf = "";
+
+        function openConfigMock(name, ip) {
+            activePeerName = name;
+            activePeerIP = ip;
+            activePeerConf = `[Interface]\nPrivateKey = [private_key_hidden_for_security]\nAddress = ${ip}/24\nDNS = 10.88.88.1\n\n[Peer]\nPublicKey = eB3s5D2lK9z6xNuyo4KitXJq37iMGb0zkPf5LfAdqvE=\nEndpoint = ${document.getElementById('display-subdomain').textContent}:51820\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25`;
+            
+            document.getElementById('modal-mock-title').textContent = `${name} Subnet Node Config`;
+            document.getElementById('modal-mock-text').textContent = activePeerConf;
+
+            const modal = document.getElementById('confDisplayMockModal');
+            modal.classList.remove('pointer-events-none');
+            modal.classList.add('opacity-100');
+        }
+
+        function closeConfigMockModal() {
+            const modal = document.getElementById('confDisplayMockModal');
+            modal.classList.add('pointer-events-none');
+            modal.classList.remove('opacity-100');
+        }
+
+        function downloadConfFileMock() {
+            const blob = new Blob([activePeerConf], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `maliknode-${activePeerName}.conf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("WireGuard profile conf downloaded!");
+        }
+
+        function copyInviteLink() {
+            const inviteUrl = `https://${document.getElementById('display-subdomain').textContent}/invite/token_8c94bf7e`;
+            navigator.clipboard.writeText(inviteUrl);
+            showToast("Copied Secure VPN Invite Link to clipboard!");
+        }
+
+        // Client-Specific DNS Rule Toggle
+        function toggleClientFilter(peerName, chk) {
+            const status = chk.checked ? "Enabled" : "Disabled";
+            showToast(`SafeSearch / Adult Shield ${status} specifically for ${peerName}!`);
+        }
+
+        // Mesh routing graph simulation
+        let isMeshRoutingOn = false;
+        function toggleMeshRouting(btn) {
+            isMeshRoutingOn = !isMeshRoutingOn;
+            const line1 = document.getElementById('mesh-line-1');
+            const line2 = document.getElementById('mesh-line-2');
+            const line3 = document.getElementById('mesh-line-3');
+
+            if (isMeshRoutingOn) {
+                btn.textContent = "MESH ROUTING ACTIVE";
+                btn.className = "px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-mono text-emerald-400";
+                
+                line1.setAttribute('stroke', '#10b981');
+                line2.setAttribute('stroke', '#10b981');
+                line3.setAttribute('stroke', '#10b981');
+                line1.removeAttribute('stroke-dasharray');
+                line2.removeAttribute('stroke-dasharray');
+                line3.removeAttribute('stroke-dasharray');
+
+                showToast("Mesh Routing: Enabled (IPTables FORWARD rules configured)");
+            } else {
+                btn.textContent = "ISOLATED";
+                btn.className = "px-3 py-1 rounded bg-red-500/10 border border-red-500/20 text-[9px] font-mono text-red-400";
+                
+                line1.setAttribute('stroke', '#ef4444');
+                line2.setAttribute('stroke', '#ef4444');
+                line3.setAttribute('stroke', '#ef4444');
+                line1.setAttribute('stroke-dasharray', '3 3');
+                line2.setAttribute('stroke-dasharray', '3 3');
+                line3.setAttribute('stroke-dasharray', '3 3');
+
+                showToast("Mesh Routing: Disabled (Subnet Isolation rule active)");
+            }
+        }
+
+        // Add Peer Mock Modals
+        function openAddPeerMockModal() {
+            const modal = document.getElementById('addPeerMockModal');
+            modal.classList.remove('pointer-events-none');
+            modal.classList.add('opacity-100');
+        }
+        function closeAddPeerMockModal() {
+            const modal = document.getElementById('addPeerMockModal');
+            modal.classList.add('pointer-events-none');
+            modal.classList.remove('opacity-100');
+            document.getElementById('new-peer-label-mock').value = '';
+        }
+
+        let mockIPIndex = 4;
+        function triggerAddPeerMock() {
+            const label = document.getElementById('new-peer-label-mock').value.trim();
+            if (!label) {
+                showToast("Error: Device name cannot be blank!");
+                return;
+            }
+
+            const activeIP = `10.88.88.${mockIPIndex++}`;
+            const container = document.getElementById('mock-peers-container');
+
+            const card = document.createElement('div');
+            card.className = "p-5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-4";
+            card.innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">
+                            <i data-lucide="smartphone" class="w-5 h-5 text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-white">${label}</h4>
+                            <p class="text-[10px] text-zinc-500 font-mono mt-0.5">VPN IP: ${activeIP} &bull; Active just now</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openConfigMock('${label}', '${activeIP}')" class="px-3.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-mono text-white transition-all">Get Conf / QR</button>
+                        <button onclick="removeMockPeer(this)" class="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-[10px] font-mono text-red-400 transition-all">Remove</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-xs font-mono border-t border-white/5 pt-3 text-zinc-500">
+                    <div><span class="text-zinc-600">UPLOADED:</span> 0.0 MB</div>
+                    <div><span class="text-zinc-600">DOWNLOADED:</span> 0.0 MB</div>
+                </div>
+                <div class="p-3 rounded-xl bg-zinc-950/60 border border-white/5 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-white uppercase tracking-wider font-mono block">Custom Client DNS Filtering Policy</span>
+                        <span class="text-[9px] text-zinc-400 font-light block mt-0.5">Enable Parental Safeguards / SafeSearch blocks specifically for this peer node.</span>
+                    </div>
+                    <input type="checkbox" onchange="toggleClientFilter('${label}', this)" class="w-4 h-4 rounded bg-zinc-800 text-blue-600 focus:ring-0">
+                </div>
+            `;
+            container.appendChild(card);
+            lucide.createIcons();
+
+            // Update stats
+            const labelEl = document.getElementById('mock-peer-count-label');
+            const count = parseInt(labelEl.textContent);
+            labelEl.textContent = `${count + 1} Active Devices`;
+
+            closeAddPeerMockModal();
+            showToast(`Success: Node created for ${label}!`);
+        }
+
+        function removeMockPeer(btn) {
+            const card = btn.closest('.p-5');
+            card.remove();
+
+            const labelEl = document.getElementById('mock-peer-count-label');
+            const count = Math.max(0, parseInt(labelEl.textContent) - 1);
+            labelEl.textContent = `${count} Active Devices`;
+
+            showToast("Subnet peer node removed.");
+        }
+
+        // Live fluctuating traffic counter
+        let totalSpeed = 0;
+        setInterval(() => {
+            if (document.getElementById('step-dashboard').classList.contains('active')) {
+                totalSpeed = Math.floor(Math.random() * 450) + 50;
+                document.getElementById('display-bandwidth').textContent = totalSpeed + ' Kbps';
+            }
+        }, 1200);
+    </script>
+</body>
+</html>
