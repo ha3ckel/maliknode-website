@@ -429,6 +429,56 @@ sudo systemctl enable --now docker
                 </div>
             </section>
 
+            <!-- SECTION 9: PHASE 3 INTEGRATION PLANS -->
+            <section id="phase3-specs" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="link" class="text-blue-500"></i> 9. Phase 3 Integration Blueprint (Frontend &lt;-&gt; API)
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Phase 3 focuses on replacing the static mockup logic inside your Client Dashboard page with real-time `fetch()` HTTP queries targeting your FastAPI daemon. Below is the operational integration script blueprint:
+                </p>
+                
+                <div class="space-y-4">
+                    <!-- Session Auth Specs -->
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-2 text-left text-xs leading-relaxed">
+                        <span class="font-bold text-white block uppercase tracking-wider text-[10px] font-mono">1. User Login & Token Management</span>
+                        <p class="text-neutral-400">On dashboard load, the browser checks for a saved JWT Token. If missing, it displays the login card overlay:</p>
+                        <pre class="p-3 rounded-lg bg-zinc-950 text-[10px] text-blue-400 font-mono">
+async function handleLogin(username, password) {
+    const res = await fetch("https://api.maliknode.app/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+        localStorage.setItem("mn_token", data.token);
+        window.location.reload();
+    }
+}
+                        </pre>
+                    </div>
+
+                    <!-- Fetch Peers Specs -->
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-2 text-left text-xs leading-relaxed">
+                        <span class="font-bold text-white block uppercase tracking-wider text-[10px] font-mono">2. Peer Synchronization</span>
+                        <p class="text-neutral-400">Fetches and maps connected devices to your peer table and mesh visualization network dynamically:</p>
+                        <pre class="p-3 rounded-lg bg-zinc-950 text-[10px] text-blue-400 font-mono">
+async function fetchUserPeers() {
+    const token = localStorage.getItem("mn_token");
+    const res = await fetch("https://api.maliknode.app/api/peers", {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+        renderPeersTable(data.peers); // Injects real rows into your table
+        drawMeshNetwork(data.peers); // Lights up SVG lines for active peers
+    }
+}
+                        </pre>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
