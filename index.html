@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MalikNode VPN — Hardened Zero-Config Private Networks</title>
+    <title>MalikNode VPN — Managed Hardened WireGuard Networks</title>
     <meta name="description" content="Instant, zero-config managed WireGuard VPN implementations with integrated AdGuard Home and Unbound recursive DNS for secure remote access.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='var(--color-primary-hex)' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='var(--color-primary-glow)' stroke='var(--color-primary-hex)' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -193,7 +193,7 @@
             transform: scale(1.03);
         }
 
-        /* Toast Green error popup style matching dns.html */
+        /* Toast styling */
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
             background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
@@ -217,7 +217,15 @@
             animation: gradientShift 4s ease infinite;
         }
 
-        /* Server Map Dots */
+        /* Server Map Connections */
+        @keyframes routeDash {
+            to { stroke-dashoffset: -20; }
+        }
+        .map-route {
+            stroke-dasharray: 4 4;
+            animation: routeDash 1s linear infinite;
+        }
+
         .server-dot {
             position: absolute; width: 6px; height: 6px; background: var(--color-primary-hex); border-radius: 50%;
             box-shadow: 0 0 8px var(--color-primary-hex);
@@ -262,6 +270,18 @@
             transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         .speed-fill.animated { transform: scaleX(1); }
+
+        /* Dynamic animated-gradient logo matching dnsmalik */
+        .animated-logo-bg {
+            background: linear-gradient(135deg, var(--color-primary-hex), #ff6b35, #3b82f6, var(--color-primary-hex));
+            background-size: 300% 300%;
+            animation: gradientShift 6s ease infinite;
+            box-shadow: 0 0 25px var(--color-primary-glow);
+            transition: box-shadow 0.3s ease;
+        }
+        .animated-logo-bg.dimmed {
+            box-shadow: 0 0 5px rgba(255,255,255,0.05);
+        }
     </style>
 </head>
 <body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden transition-all duration-500 grid-bg">
@@ -275,9 +295,14 @@
     <!-- Navigation Header -->
     <nav class="fixed top-0 left-0 right-0 z-50 h-20 glass border-b border-white/5 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-            <a href="#" class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 dynamic-bg-color">
-                    <i data-lucide="shield" class="w-4.5 h-4.5 text-white"></i>
+            <a href="#" class="flex items-center gap-3 group">
+                <!-- Replicated dynamic gradient logo with conditional glow reduction -->
+                <div id="logo-container" class="w-10 h-10 rounded-xl animated-logo-bg flex items-center justify-center cursor-pointer" onclick="toggleLogoGlow()">
+                    <svg class="w-6 h-6 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z" fill="rgba(227, 6, 19, 0.2)" stroke="#E30613" stroke-width="3"/>
+                        <path d="M38 50L46 58L62 42" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
                 <span class="font-display font-extrabold text-lg tracking-wider text-white">MALIK<span class="dynamic-text-color">NODE</span></span>
             </a>
@@ -292,7 +317,7 @@
             </div>
 
             <div class="hidden md:flex items-center gap-3">
-                <!-- Highly Visible Theme Switcher in Navigation Bar -->
+                <!-- Theme Switcher next to login -->
                 <button onclick="toggleTheme()" class="px-3.5 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 mr-2" title="Switch Theme">
                     <i data-lucide="palette" class="w-4 h-4 dynamic-text-color"></i>
                 </button>
@@ -302,106 +327,93 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex items-center justify-center pt-24 pb-20 overflow-hidden">
+    <!-- Centered Hero Section with Dashboard underneath -->
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-24 overflow-hidden">
         <!-- Background glows -->
         <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <div class="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-16 relative z-10">
-            <!-- Left Column -->
-            <div class="flex-1 text-center lg:text-left">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <span class="text-xs text-neutral-400 font-mono">All systems operational</span>
-                </div>
-
-                <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight leading-[0.9] text-white">
-                    Your internet,<br>
-                    <span class="animated-gradient-text">your rules.</span>
-                </h1>
-
-                <p class="mt-8 text-neutral-400 text-base md:text-lg font-light leading-relaxed max-w-lg mx-auto lg:mx-0">
-                    High speed WireGuard VPN tunnels paired with recursive hardware-level privacy. Take back your footprint with zero-log recursive resolve.
-                </p>
-
-                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-10">
-                    <button class="btn-primary" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        Download Free
-                    </button>
-                    <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
-                        Learn More
-                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
-                    </button>
-                </div>
+        <div class="max-w-7xl mx-auto px-6 flex flex-col items-center text-center relative z-10 w-full">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs text-neutral-400 font-mono">All systems operational</span>
             </div>
 
-            <!-- Right Column — Custom Browser Interactive Preview Mockup -->
-            <div class="flex-1 flex justify-center w-full">
-                <div class="relative w-full max-w-lg rounded-3xl overflow-hidden glass glass-glow p-3 border border-white/10 pulse-ring">
-                    <div class="rounded-2xl overflow-hidden border border-white/5 bg-zinc-950/90">
-                        <div class="h-10 bg-zinc-900 border-b border-white/5 px-4 flex items-center gap-2">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight leading-[0.9] text-white max-w-4xl">
+                Your internet,<br>
+                <span class="animated-gradient-text">your rules.</span>
+            </h1>
+
+            <p class="mt-8 text-neutral-400 text-base md:text-lg font-light leading-relaxed max-w-2xl mx-auto">
+                High speed WireGuard VPN tunnels paired with recursive hardware-level privacy. Take back your footprint with zero-log recursive resolve.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 mb-16">
+                <button class="btn-primary" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download Free
+                </button>
+                <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
+                    Learn More
+                    <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Dashboard Preview Mockup: Big, Centered Underneath Hero Text -->
+            <div class="w-full max-w-4xl rounded-3xl overflow-hidden glass glass-glow p-3 border border-white/10 pulse-ring">
+                <div class="rounded-2xl overflow-hidden border border-white/5 bg-zinc-950/90 text-left">
+                    <div class="h-10 bg-zinc-900 border-b border-white/5 px-4 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
                             <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                             <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
                             <span class="text-xs text-gray-500 ml-4 font-mono">dashboard.maliknode.app</span>
                         </div>
-                        <div class="p-6 md:p-8 flex flex-col gap-6 text-left">
-                            <div class="space-y-4">
-                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-800/30 text-xs font-semibold text-emerald-400">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    Instance Online
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span class="text-[10px] text-gray-500 font-mono">Secure Connection</span>
+                        </div>
+                    </div>
+                    <div class="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center text-left">
+                        <div class="flex-1 space-y-6">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-800/30 text-xs font-semibold text-emerald-400">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Instance Online
+                            </div>
+                            <h3 class="font-display font-bold text-2xl text-white">Central Admin Dashboard</h3>
+                            <p class="text-gray-400 text-sm leading-relaxed">
+                                Generate and download customized profile configurations (`.conf` and QR codes) for your active device nodes. Block threats, manage subnets, and monitor data rates securely.
+                            </p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-4 rounded-xl bg-zinc-900/60 border border-white/5">
+                                    <div class="text-xs text-gray-500 mb-1">Tunnel Protocol</div>
+                                    <div class="text-sm font-semibold text-white font-mono">WireGuard v1 (Kernel)</div>
                                 </div>
-                                <h3 class="font-display font-bold text-2xl text-white">Central Admin Dashboard</h3>
-                                <p class="text-gray-400 text-sm leading-relaxed">
-                                    Generate and download customized profile configurations (`.conf` and QR codes) for your active device nodes.
-                                </p>
+                                <div class="p-4 rounded-xl bg-zinc-900/60 border border-white/5">
+                                    <div class="text-xs text-gray-500 mb-1">Secure Upstream DNS</div>
+                                    <div class="text-sm font-semibold text-white font-mono">dns.maliknode.app</div>
+                                </div>
                             </div>
-                            <div class="p-4 rounded-2xl bg-zinc-900/60 border border-white/5 font-mono text-[11px] text-blue-400 space-y-2 dynamic-text-color">
-                                <div class="text-gray-500 border-b border-white/5 pb-2 font-sans font-bold">Client Config File</div>
-                                <div>[Interface]</div>
-                                <div>PrivateKey = [client_private_key]</div>
-                                <div>Address = 10.66.66.2/24</div>
-                                <div class="text-emerald-400">DNS = 10.66.66.1</div>
-                                <div class="mt-2">[Peer]</div>
-                                <div>PublicKey = [server_public_key]</div>
-                                <div class="text-white">Endpoint = maliknode.app:51820</div>
-                                <div>AllowedIPs = 0.0.0.0/0</div>
-                            </div>
+                        </div>
+                        <div class="w-full md:w-96 p-6 rounded-2xl bg-zinc-900/40 border border-white/5 font-mono text-[11px] text-blue-400 space-y-2 dynamic-text-color">
+                            <div class="text-gray-500 border-b border-white/5 pb-2 font-sans font-bold">Client Config File</div>
+                            <div>[Interface]</div>
+                            <div>PrivateKey = [client_private_key]</div>
+                            <div>Address = 10.66.66.2/24</div>
+                            <div class="text-emerald-400">DNS = 10.66.66.1</div>
+                            <div class="mt-4">[Peer]</div>
+                            <div>PublicKey = [server_public_key]</div>
+                            <div class="text-white">Endpoint = maliknode.app:51820</div>
+                            <div>AllowedIPs = 0.0.0.0/0</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Scroll indicator -->
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
-            <span class="text-[10px] text-neutral-600 uppercase tracking-widest">Scroll</span>
-            <div class="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center p-1.5">
-                <div class="w-1 h-2 rounded-full bg-white/30 animate-bounce"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Trust Bar -->
-    <section class="py-12 border-y border-white/5 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/3 via-transparent to-blue-500/3 pointer-events-none"></div>
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-                <span class="text-xs text-neutral-600 uppercase tracking-widest">Trusted by developers at</span>
-                <span class="text-neutral-500 font-medium text-lg opacity-40">Stripe</span>
-                <span class="text-neutral-500 font-medium text-lg opacity-40">Vercel</span>
-                <span class="text-neutral-500 font-medium text-lg opacity-40">Linear</span>
-                <span class="text-neutral-500 font-medium text-lg opacity-40">Notion</span>
-                <span class="text-neutral-500 font-medium text-lg opacity-40">Figma</span>
-                <span class="text-neutral-500 font-medium text-lg opacity-40">GitHub</span>
-            </div>
-        </div>
     </section>
 
     <!-- Why MalikNode is Different -->
-    <section id="features" class="py-32 relative">
+    <section id="features" class="py-32 relative border-t border-white/5">
         <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 relative z-10">
             <div class="text-center mb-20 reveal">
@@ -490,52 +502,66 @@
         </div>
     </section>
 
-    <!-- DNS Stack / Real-time Animated Request Flow (ngrok style) -->
+    <!-- DNS Stack / Real-time World-Class Animated Flow (ngrok style) -->
     <section id="dns-stack" class="relative max-w-7xl mx-auto px-6 py-24 border-t border-white/5 overflow-hidden">
         <div class="max-w-4xl mx-auto text-center mb-16">
             <div class="text-blue-500 font-bold uppercase tracking-wider text-xs mb-3 dynamic-text-color">Resolving Visualizer</div>
-            <h2 class="font-display font-extrabold text-4xl text-white mb-4">DNS Resolving Flow</h2>
+            <h2 class="font-display font-extrabold text-4xl text-white mb-4 font-medium">DNS Resolving Flow</h2>
             <p class="text-gray-400">Watch your queries trace dynamically through AdGuard and Unbound resolvers in real-time.</p>
         </div>
 
-        <!-- Real Working CSS/JS Animated Network Flow Diagram -->
-        <div id="dns-flow-container" class="relative w-full max-w-4xl mx-auto p-12 rounded-3xl glass border border-white/10 bg-zinc-950/40 overflow-hidden min-h-[300px] flex items-center justify-between gap-6">
+        <!-- Real Working CSS/JS Animated Network Flow & Live Console Logs -->
+        <div class="relative w-full max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
             
-            <!-- Step 1: Device Query -->
-            <div class="relative w-[180px] p-6 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10">
-                <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 mb-4 dynamic-bg-glow">
-                    <i data-lucide="monitor" class="w-6 h-6 dynamic-text-color"></i>
+            <!-- Graphic Flow Map -->
+            <div id="dns-flow-container" class="lg:col-span-2 relative p-8 rounded-3xl glass border border-white/10 bg-zinc-950/40 min-h-[300px] flex items-center justify-between overflow-hidden">
+                <!-- Step 1: Device Query -->
+                <div class="relative w-[140px] p-4 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10 shadow-lg shadow-black/80">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 mb-3 dynamic-bg-glow">
+                        <i data-lucide="monitor" class="w-5 h-5 dynamic-text-color"></i>
+                    </div>
+                    <div class="text-[11px] font-bold text-white mb-0.5 font-sans">1. Device Query</div>
+                    <div class="text-[9px] text-blue-400 font-mono dynamic-text-color">dns.maliknode.app</div>
                 </div>
-                <div class="text-xs font-bold text-white mb-1 font-sans">1. Device Query</div>
-                <div class="text-[10px] text-blue-400 font-mono dynamic-text-color">dns.maliknode.app</div>
-            </div>
 
-            <!-- Connection Line 1 -->
-            <div class="hidden md:block absolute top-[52%] left-[28%] right-[60%] h-[3px] bg-zinc-800/40 -translate-y-1/2 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 w-full animate-[pulse_2s_infinite]"></div>
-            </div>
-
-            <!-- Step 2: AdGuard Filtering -->
-            <div class="relative w-[180px] p-6 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10">
-                <div id="adguard-shield" class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4 transition-all duration-300">
-                    <i data-lucide="shield" class="w-6 h-6"></i>
+                <!-- Connection Line 1 -->
+                <div class="hidden md:block absolute top-[52%] left-[28%] right-[60%] h-[3px] bg-zinc-800/40 -translate-y-1/2 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 w-full animate-[pulse_2s_infinite]"></div>
                 </div>
-                <div class="text-xs font-bold text-white mb-1 font-sans">2. AdGuard Filtering</div>
-                <div class="text-[10px] text-emerald-400 font-mono">Blocks Ads / Trackers</div>
-            </div>
 
-            <!-- Connection Line 2 -->
-            <div class="hidden md:block absolute top-[52%] left-[60%] right-[28%] h-[3px] bg-zinc-800/40 -translate-y-1/2 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 w-full animate-[pulse_2s_infinite]"></div>
-            </div>
-
-            <!-- Step 3: Unbound Recursive Resolving -->
-            <div class="relative w-[180px] p-6 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10">
-                <div id="unbound-globe" class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-4 transition-all duration-300">
-                    <i data-lucide="globe" class="w-6 h-6"></i>
+                <!-- Step 2: AdGuard Filtering -->
+                <div class="relative w-[140px] p-4 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10 shadow-lg shadow-black/80">
+                    <div id="adguard-shield" class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-3 transition-all duration-300">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-[11px] font-bold text-white mb-0.5 font-sans">2. AdGuard Filter</div>
+                    <div class="text-[9px] text-emerald-400 font-mono">Blocks Ads & Trackers</div>
                 </div>
-                <div class="text-xs font-bold text-white mb-1 font-sans">3. Unbound Recursive</div>
-                <div class="text-[10px] text-indigo-400 font-mono">Root DNS Server</div>
+
+                <!-- Connection Line 2 -->
+                <div class="hidden md:block absolute top-[52%] left-[60%] right-[28%] h-[3px] bg-zinc-800/40 -translate-y-1/2 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 w-full animate-[pulse_2s_infinite]"></div>
+                </div>
+
+                <!-- Step 3: Unbound Recursive Resolving -->
+                <div class="relative w-[140px] p-4 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10 shadow-lg shadow-black/80">
+                    <div id="unbound-globe" class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-3 transition-all duration-300">
+                        <i data-lucide="globe" class="w-5 h-5"></i>
+                    </div>
+                    <div class="text-[11px] font-bold text-white mb-0.5 font-sans">3. Unbound resolver</div>
+                    <div class="text-[9px] text-indigo-400 font-mono">Recursive Resolve</div>
+                </div>
+            </div>
+
+            <!-- Live scrolling console logs (ngrok-inspired) -->
+            <div class="p-6 rounded-3xl border border-white/10 bg-zinc-950 font-mono text-[10px] flex flex-col justify-between overflow-hidden relative shadow-inner">
+                <div class="text-zinc-500 border-b border-white/5 pb-2 mb-4 flex items-center justify-between">
+                    <span>LIVE RESOLVE LOGS</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                </div>
+                <div id="dns-logs" class="flex-grow space-y-2.5 overflow-hidden text-left h-[180px] flex flex-col justify-end">
+                    <!-- Log entries injected dynamically -->
+                </div>
             </div>
 
         </div>
@@ -624,11 +650,12 @@
                 <p class="mt-4 text-neutral-400 font-light max-w-md mx-auto">Available on all major platforms. Download the client, add your config, and go.</p>
             </div>
 
+            <!-- Improvised OS download grid using native vector logos -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                 <!-- Windows -->
                 <a href="https://download.wireguard.com/windows-client/wireguard-installer.exe" target="_blank" class="os-card reveal group">
                     <div class="os-icon w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-5">
-                        <svg class="w-7 h-7 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+                        <iconify-icon icon="logos:microsoft-windows" class="text-2xl"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">Windows</h3>
                     <p class="text-xs text-neutral-500">7 / 8 / 10 / 11</p>
@@ -641,10 +668,10 @@
                 <!-- macOS -->
                 <a href="https://apps.apple.com/us/app/wireguard/id1451685025" target="_blank" class="os-card reveal group" style="transition-delay:0.05s">
                     <div class="os-icon w-14 h-14 rounded-2xl bg-neutral-500/10 flex items-center justify-center mx-auto mb-5">
-                        <svg class="w-7 h-7 text-neutral-300" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                        <iconify-icon icon="logos:apple" class="text-2xl text-white"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">macOS</h3>
-                    <p class="text-xs text-neutral-500">11+ (Intel / M1 / M2)</p>
+                    <p class="text-xs text-neutral-500">11+ (Intel & Apple Silicon)</p>
                     <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
                         <span>App Store</span>
                         <i data-lucide="external-link" class="w-3 h-3"></i>
@@ -654,7 +681,7 @@
                 <!-- Linux -->
                 <a href="https://github.com/WireGuard/wireguard-linux#installation" target="_blank" class="os-card reveal group" style="transition-delay:0.1s">
                     <div class="os-icon w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-5">
-                        <svg class="w-7 h-7 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.368 1.884 1.43.868.074 1.723-.2 2.438-.468.716-.27 1.347-.534 1.766-.291.217.125.378.307.453.545.074.234.07.51-.006.818-.136.534-.47 1.178-.883 1.748a.424.424 0 00-.074.258c0 .058.009.115.03.168l.003.003c.07.17.2.29.363.335.176.044.355-.014.488-.127.568-.48 1.036-1.076 1.37-1.696.338-.62.548-1.283.548-1.864 0-.41-.09-.79-.275-1.1a1.533 1.533 0 00-.735-.6 3.43 3.43 0 00-.884-.237c-.256-.03-.52-.027-.783-.017-.527.024-1.06.1-1.492.12-.336.015-.613-.028-.8-.18-.2-.167-.268-.438-.265-.836.004-.564.157-1.343.197-2.15.024-.468-.01-.956-.174-1.414a2.88 2.88 0 00-.694-1.078c.002-.054.005-.1.005-.149 0-1.404-.455-2.756-1.244-3.873-.785-1.105-1.906-1.972-3.209-2.404-.663-.222-1.371-.337-2.086-.337z"/></svg>
+                        <iconify-icon icon="logos:tux" class="text-2xl"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">Linux</h3>
                     <p class="text-xs text-neutral-500">All Distros</p>
@@ -667,7 +694,7 @@
                 <!-- iOS -->
                 <a href="https://apps.apple.com/us/app/wireguard/id1441195209" target="_blank" class="os-card reveal group" style="transition-delay:0.15s">
                     <div class="os-icon w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-5">
-                        <svg class="w-7 h-7 text-cyan-400" viewBox="0 0 24 24" fill="currentColor"><path d="M15.769 14.874c-.685 1.045-1.456 2.068-2.36 2.998-.396.408-.82.798-1.296 1.12-.476.32-.999.588-1.578.679a2.628 2.628 0 01-1.706-.218c-.527-.28-.94-.722-1.274-1.218-.671-1.003-1.025-2.206-1.166-3.402-.142-1.207-.08-2.457.193-3.639.273-1.18.776-2.298 1.504-3.22.362-.463.77-.885 1.228-1.24.459-.356.964-.65 1.516-.79a2.55 2.55 0 011.665.064c.517.195.94.552 1.268.99.657.877.937 1.992.99 3.088.053 1.1-.11 2.22-.463 3.268h.179zm-5.487 7.637c.282.155.578.282.883.377a5.68 5.68 0 001.93.276c.652-.006 1.302-.094 1.928-.248 1.252-.31 2.424-.852 3.447-1.596a9.48 9.48 0 002.486-2.586c.3-.447.566-.92.774-1.417.104-.248.193-.503.264-.764.07-.26.124-.528.124-.803v-.035a2.108 2.108 0 00-.052-.398c-.07-.263-.19-.505-.356-.714a2.335 2.335 0 00-.615-.556 4.007 4.007 0 00-.833-.456c-.247-.103-.5-.19-.756-.266a8.393 8.393 0 00-1.016-.223 10.98 10.98 0 00-1.076-.124l-.266-.017c.35.52.625 1.09.816 1.692.19.602.296 1.237.296 1.888 0 .6-.087 1.193-.266 1.756-.18.563-.443 1.094-.786 1.565a5.784 5.784 0 01-1.305 1.233c-.255.177-.524.332-.804.464a5.1 5.1 0 01-.89.313h-.001a3.57 3.57 0 01-.45.088 3.14 3.14 0 01-.454.033c-.307 0-.603-.054-.885-.149a2.77 2.77 0 01-.76-.391 2.6 2.6 0 01-.582-.607 2.38 2.38 0 01-.352-.774 2.31 2.31 0 01-.06-.843c.05-.57.248-1.103.537-1.562.288-.46.668-.856 1.1-1.17.433-.314.915-.548 1.415-.7.502-.152 1.02-.223 1.53-.218l.12.002c-.07-.126-.148-.246-.233-.36a4.13 4.13 0 00-.587-.6 4.207 4.207 0 00-.724-.486 4.19 4.19 0 00-.84-.342 4.29 4.29 0 00-.912-.155c-.312-.02-.627-.01-.935.038a5.1 5.1 0 00-1.8.586c-.296.166-.577.359-.84.578a6.1 6.1 0 00-.742.716c-.23.265-.44.547-.63.843-.19.296-.357.607-.502.928-.146.322-.268.655-.369.996-.1.341-.178.69-.233 1.043a7.63 7.63 0 00-.09 1.07c0 .362.022.725.068 1.083.045.358.113.712.203 1.059.09.347.202.688.335 1.018.133.33.288.65.465.956.177.307.375.6.595.875.22.275.461.532.723.766.261.234.543.447.843.633.3.186.618.346.95.477z"/></svg>
+                        <iconify-icon icon="logos:apple-app-store" class="text-2xl"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">iOS</h3>
                     <p class="text-xs text-neutral-500">15.0+</p>
@@ -680,7 +707,7 @@
                 <!-- Android -->
                 <a href="https://play.google.com/store/apps/details?id=com.wireguard.android" target="_blank" class="os-card reveal group" style="transition-delay:0.2s">
                     <div class="os-icon w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-5">
-                        <svg class="w-7 h-7 text-green-400" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341a.64.64 0 00-.637-.637.64.64 0 00-.637.637.64.64 0 00.637.637.64.64 0 00.637-.637m-10.012 0a.64.64 0 00-.637-.637.64.64 0 00-.637.637.64.64 0 00.637.637.64.64 0 00.637-.637m10.405-6.027l1.872-3.243a.393.393 0 00-.144-.536.393.393 0 00-.536.144l-1.895 3.282C15.632 8.26 13.883 7.847 12 7.847c-1.883 0-3.632.413-5.176 1.114L4.929 5.679a.393.393 0 00-.536-.144.393.393 0 00-.144.536l1.872 3.243C2.688 11.166.345 14.757 0 19.006h24c-.345-4.249-2.688-7.84-6.084-9.692z"/></svg>
+                        <iconify-icon icon="logos:google-play-icon" class="text-2xl"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">Android</h3>
                     <p class="text-xs text-neutral-500">8.0+</p>
@@ -691,9 +718,9 @@
                 </a>
             </div>
 
-            <!-- Manual Config & Green custom notification trigger -->
+            <!-- Config helper trigger - modal activation -->
             <div class="mt-10 text-center reveal">
-                <button onclick="showToast('Config generator coming soon!')" class="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-purple-400 transition-colors cursor-pointer">
+                <button onclick="openConfigModal()" class="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-purple-400 transition-colors cursor-pointer">
                     <i data-lucide="file-text" class="w-4 h-4"></i>
                     Need a config file? Generate one here
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
@@ -702,7 +729,49 @@
         </div>
     </section>
 
-    <!-- Everywhere You Need to Be (Server Map Section) -->
+    <!-- Interactive Config Generator Modal -->
+    <div id="configModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="w-full max-w-lg glass rounded-3xl p-8 border border-white/10 shadow-2xl relative">
+            <button onclick="closeConfigModal()" class="absolute top-6 right-6 text-neutral-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-display font-bold text-2xl text-white mb-2">WireGuard Config Generator</h3>
+            <p class="text-xs text-neutral-400 mb-6">Provision a client configuration file by pasting your public key below.</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-neutral-400 mb-1.5 uppercase font-mono">Your WireGuard Public Key (Base64)</label>
+                    <input type="text" id="wgPubKey" placeholder="e.g. eB3s5D2lK9z6xNuyo4KitXJq37iMGb0zkPf5LfAdqvE=" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500 font-mono">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-400 mb-1.5 uppercase font-mono">Node Location</label>
+                        <select id="wgLocation" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <option value="ny">New York, USA</option>
+                            <option value="lon">London, UK</option>
+                            <option value="mum" selected>Mumbai, IN</option>
+                            <option value="sg">Singapore</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-400 mb-1.5 uppercase font-mono">DNS Protocol</label>
+                        <select id="wgDns" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-white/10 text-sm text-white focus:outline-none focus:border-blue-500">
+                            <option value="standard">Standard Resolve</option>
+                            <option value="adguard" selected>AdGuard AdBlock</option>
+                            <option value="strict">Strict Privacy</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="generateConfig()" class="w-full h-12 flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all dynamic-bg-color mt-4">
+                    Generate & Download Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Everywhere You Need to Be (Improvised Map Section with Routes) -->
     <section id="servers" class="py-32 relative overflow-hidden border-t border-white/5">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-blue-500/3 rounded-full blur-[150px] pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-6 relative z-10">
@@ -711,21 +780,28 @@
                     <i data-lucide="map" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i>
                     <span class="text-xs text-neutral-400 font-medium font-mono">Server Network</span>
                 </div>
-                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white">
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white font-medium">
                     Everywhere you<br><span class="text-neutral-500">need to be.</span>
                 </h2>
             </div>
 
             <!-- Map Container -->
             <div class="relative w-full max-w-4xl mx-auto aspect-[2/1] rounded-3xl bg-white/[0.02] border border-white/5 overflow-hidden reveal">
-                <!-- Simplified world map outline -->
-                <svg class="w-full h-full opacity-20" viewBox="0 0 800 400" fill="none">
+                <!-- Improvised world map layout with active glowing routing path curves -->
+                <svg class="w-full h-full opacity-25" viewBox="0 0 800 400" fill="none">
+                    <!-- World paths -->
                     <path d="M150 120 Q170 100 200 110 Q230 90 250 100 Q270 95 280 110 Q300 100 310 115 Q300 130 280 135 Q260 150 240 140 Q220 155 200 145 Q180 150 160 140 Q145 135 150 120Z" fill="rgba(255,255,255,0.3)"/>
                     <path d="M310 105 Q330 95 350 100 Q370 90 390 95 Q410 90 420 100 Q430 110 420 120 Q410 130 390 135 Q370 140 350 130 Q330 135 315 125 Q305 115 310 105Z" fill="rgba(255,255,255,0.3)"/>
                     <path d="M160 155 Q180 145 200 150 Q220 155 230 170 Q240 190 230 210 Q220 230 200 240 Q180 250 160 240 Q140 230 135 210 Q130 190 140 170 Q145 160 160 155Z" fill="rgba(255,255,255,0.3)"/>
                     <path d="M350 140 Q370 130 400 135 Q430 140 460 155 Q490 170 510 190 Q530 210 540 240 Q545 270 530 290 Q510 310 480 320 Q450 330 420 325 Q390 320 370 305 Q350 290 340 265 Q330 240 335 215 Q340 190 350 170 Q345 155 350 140Z" fill="rgba(255,255,255,0.3)"/>
                     <path d="M540 130 Q570 120 600 125 Q640 130 670 145 Q700 160 720 185 Q735 205 740 230 Q745 260 735 280 Q720 300 695 310 Q670 315 645 305 Q620 295 600 275 Q580 255 570 230 Q560 205 555 180 Q550 155 540 130Z" fill="rgba(255,255,255,0.3)"/>
                     <path d="M680 60 Q700 50 730 55 Q755 60 770 75 Q780 90 775 110 Q765 125 745 130 Q725 135 705 125 Q690 115 682 95 Q675 75 680 60Z" fill="rgba(255,255,255,0.3)"/>
+
+                    <!-- Glowing interconnecting fiber paths -->
+                    <path d="M 176 112 Q 240 80 320 120" fill="none" stroke="var(--color-primary-hex)" stroke-width="1" class="map-route" opacity="0.3"/>
+                    <path d="M 320 120 Q 370 140 440 160" fill="none" stroke="var(--color-primary-hex)" stroke-width="1" class="map-route" opacity="0.3"/>
+                    <path d="M 440 160 Q 480 140 560 140" fill="none" stroke="var(--color-primary-hex)" stroke-width="1" class="map-route" opacity="0.3"/>
+                    <path d="M 496 128 Q 540 180 560 140" fill="none" stroke="var(--color-primary-hex)" stroke-width="1" class="map-route" opacity="0.3"/>
                 </svg>
 
                 <!-- Flashing map dots -->
@@ -753,7 +829,7 @@
                 </div>
             </div>
 
-            <!-- Realistic and relevant network info text -->
+            <!-- Improvised relevant network text -->
             <div class="mt-8 text-center max-w-2xl mx-auto reveal">
                 <p class="text-xs text-neutral-500 leading-relaxed font-mono">
                     All MalikNode ingress nodes are deployed in enterprise tier-1 carrier-neutral data centers, featuring low-latency peering and direct BGP routing. Dynamic path selection automatically connects you to the optimal location.
@@ -771,7 +847,7 @@
                     <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-400"></i>
                     <span class="text-xs text-neutral-400 font-medium">Pricing</span>
                 </div>
-                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white">
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white font-medium">
                     Simple, honest<br><span class="text-neutral-500">pricing.</span>
                 </h2>
                 <p class="mt-4 text-neutral-400 font-light">No hidden fees. No tricks. Cancel anytime.</p>
@@ -917,7 +993,7 @@
                         <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white dynamic-bg-color">
                             <i data-lucide="shield" class="w-4 h-4 text-white"></i>
                         </div>
-                        <span class="font-display font-bold text-sm tracking-tight text-white">MALIK<span class="dynamic-text-color">NODE</span></span>
+                        <span class="font-display font-bold text-sm tracking-tight text-white">MALIK<span class="dynamic-text-color font-extrabold">NODE</span></span>
                     </div>
                     <p class="text-xs text-gray-500 leading-relaxed">
                         Hardened, zero-config WireGuard VPN deployments for remote workers, companies, and privacy enthusiasts.
@@ -989,11 +1065,11 @@
         // Billing toggle
         let isYearly = false;
         function toggleBilling() {
-            isYearly = !isYearly;
             const dot = document.getElementById('toggleDot');
             const toggle = document.getElementById('billingToggle');
             const mLabel = document.getElementById('monthlyLabel');
             const yLabel = document.getElementById('yearlyLabel');
+            isYearly = !isYearly;
 
             if (isYearly) {
                 dot.style.transform = 'translateX(20px)';
@@ -1058,6 +1134,62 @@
             document.documentElement.style.setProperty('--scrollbar-thumb', 'rgba(168, 85, 247, 0.4)');
         }
 
+        // Conditional logo glow toggle
+        function toggleLogoGlow() {
+            const logo = document.getElementById('logo-container');
+            if (logo) {
+                logo.classList.toggle('dimmed');
+                if (logo.classList.contains('dimmed')) {
+                    showToast('Logo connection glow: Offline');
+                } else {
+                    showToast('Logo connection glow: Online');
+                }
+            }
+        }
+
+        // Config Modal triggers
+        function openConfigModal() {
+            const modal = document.getElementById('configModal');
+            modal.classList.remove('pointer-events-none');
+            modal.classList.add('opacity-100');
+        }
+        function closeConfigModal() {
+            const modal = document.getElementById('configModal');
+            modal.classList.add('pointer-events-none');
+            modal.classList.remove('opacity-100');
+        }
+
+        // Generate profile download action
+        function generateConfig() {
+            const pubKey = document.getElementById('wgPubKey').value.trim();
+            if (!pubKey) {
+                showToast('Error: Public key cannot be blank!');
+                return;
+            }
+            
+            const location = document.getElementById('wgLocation').value;
+            const dns = document.getElementById('wgDns').value;
+            
+            let resolverIP = "10.66.66.1";
+            let endpointHost = "maliknode.app:51820";
+            
+            // Build virtual profile
+            const confContent = `[Interface]\nPrivateKey = [your_local_private_key_remains_hidden]\nAddress = 10.66.66.5/24\nDNS = ${resolverIP}\n\n[Peer]\nPublicKey = eB3s5D2lK9z6xNuyo4KitXJq37iMGb0zkPf5LfAdqvE=\nEndpoint = ${endpointHost}\nAllowedIPs = 0.0.0.0/0\nPersistentKeepalive = 25`;
+            
+            // Create profile file blob
+            const blob = new Blob([confContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `maliknode-${location}-${dns}.conf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            closeConfigModal();
+            showToast('Success: WireGuard profile downloaded!');
+        }
+
         // Toast notification timer
         let toastTimer;
         function showToast(msg) {
@@ -1083,15 +1215,49 @@
 
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-        // Real-time DNS Resolving Flow Animation (ngrok style)
+        // World-Class Console Logs + DNS Tracing animation loop (ngrok style)
+        const sampleDomains = [
+            { name: 'google.com', blocked: false },
+            { name: 'doubleclick.net', blocked: true },
+            { name: 'analytics.adjust.com', blocked: true },
+            { name: 'github.com', blocked: false },
+            { name: 'facebook.com', blocked: false },
+            { name: 'telemetry.microsoft.com', blocked: true },
+            { name: 'netflix.com', blocked: false },
+            { name: 'coinhive.com', blocked: true }
+        ];
+
+        function logQuery(domain, isBlocked) {
+            const logsDiv = document.getElementById('dns-logs');
+            if (!logsDiv) return;
+
+            const timeStr = new Date().toTimeString().split(' ')[0];
+            const logRow = document.createElement('div');
+            logRow.className = 'flex items-center justify-between pb-1 border-b border-white/[0.02] animate-[fadeIn_0.3s_ease-out]';
+            
+            if (isBlocked) {
+                logRow.innerHTML = `<span class="text-zinc-500">[${timeStr}]</span> <span class="text-red-400 font-bold truncate max-w-[120px]">${domain}</span> <span class="text-red-500 font-semibold">BLOCKED</span>`;
+            } else {
+                logRow.innerHTML = `<span class="text-zinc-500">[${timeStr}]</span> <span class="text-zinc-300 truncate max-w-[120px]">${domain}</span> <span class="text-green-400 font-semibold font-mono">RESOLVED</span>`;
+            }
+
+            logsDiv.appendChild(logRow);
+            
+            // Keep maximum 7 logs visible
+            while (logsDiv.children.length > 7) {
+                logsDiv.children[0].remove();
+            }
+        }
+
         function startDNSFlowAnimation() {
             const container = document.getElementById('dns-flow-container');
             if (!container) return;
             
-            // Spawn a query packet every 2 seconds
             setInterval(() => {
+                const sample = sampleDomains[Math.floor(Math.random() * sampleDomains.length)];
+                
                 const packet = document.createElement('div');
-                packet.className = 'absolute w-3 h-3 rounded-full bg-blue-400 blur-[1px] transition-all duration-[3s] ease-in-out z-20';
+                packet.className = 'absolute w-3 h-3 rounded-full bg-blue-400 blur-[1px] transition-all duration-[3.2s] ease-in-out z-20';
                 packet.style.left = '12%';
                 packet.style.top = '52%';
                 packet.style.transform = 'translate(-50%, -50%)';
@@ -1106,15 +1272,16 @@
                 
                 // Phase 2: Filter check (AdGuard)
                 setTimeout(() => {
-                    const isBlocked = Math.random() > 0.6; // 40% queries are blocked (tracking)
                     const adguardShield = document.getElementById('adguard-shield');
                     
-                    if (isBlocked) {
+                    if (sample.blocked) {
                         packet.style.backgroundColor = '#ef4444'; // Red (blocked)
                         if (adguardShield) {
                             adguardShield.classList.add('bg-red-500/20', 'text-red-400', 'scale-110');
                             setTimeout(() => adguardShield.classList.remove('bg-red-500/20', 'text-red-400', 'scale-110'), 400);
                         }
+                        logQuery(sample.name, true);
+                        
                         // Fade out blocked query packet
                         setTimeout(() => {
                             packet.style.opacity = '0';
@@ -1139,6 +1306,8 @@
                                 unboundGlobe.classList.add('bg-indigo-500/20', 'text-indigo-400', 'scale-110');
                                 setTimeout(() => unboundGlobe.classList.remove('bg-indigo-500/20', 'text-indigo-400', 'scale-110'), 400);
                             }
+                            logQuery(sample.name, false);
+                            
                             packet.style.opacity = '0';
                             packet.style.transform = 'translate(-50%, -50%) scale(0)';
                         }, 1200);
@@ -1148,9 +1317,9 @@
                 // Remove from DOM
                 setTimeout(() => {
                     packet.remove();
-                }, 3500);
+                }, 3700);
                 
-            }, 1800);
+            }, 2200);
         }
 
         // Start animation
