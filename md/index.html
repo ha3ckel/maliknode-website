@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MalikNode — System Architecture & API Specifications</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='%23E30613' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='rgba(227,%206,%2019,%200.2)' stroke='%23E30613' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: '#030303',
+                        'dark-alt': '#09090b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #030303; color: #fff; overflow-x: hidden; }
+        .glass {
+            background: rgba(15, 15, 20, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .animated-logo-bg {
+            background: linear-gradient(135deg, #3b82f6, #ff6b35, #E30613, #3b82f6);
+            background-size: 300% 300%;
+            animation: gradientShift 6s ease infinite;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden min-h-screen flex flex-col justify-between grid-bg">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 h-20 glass border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl animated-logo-bg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z" fill="rgba(227, 6, 19, 0.2)" stroke="#E30613" stroke-width="3"/>
+                        <path d="M38 50L46 58L62 42" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="font-display font-extrabold text-lg tracking-wider text-white">MALIK<span class="text-blue-500 font-extrabold">NODE</span></span>
+            </a>
+            <a href="/" class="text-sm font-medium text-neutral-400 hover:text-white transition-colors">&larr; Back to Home</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-6 pt-28 pb-20 w-full flex-grow flex flex-col lg:flex-row gap-8">
+        
+        <!-- Sidebar Table of Contents -->
+        <aside class="w-full lg:w-64 shrink-0 flex flex-col gap-2">
+            <h3 class="text-[10px] text-zinc-500 font-mono uppercase tracking-widest px-4 mb-2">Specifications</h3>
+            <a href="#directories" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="folder" class="w-4 h-4 text-yellow-400"></i> File Directory Map
+            </a>
+            <a href="#tenant-isolation" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Tenant Separation
+            </a>
+            <a href="#adguard-isolation" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="container" class="w-4 h-4 text-purple-400"></i> Isolated AdGuard
+            </a>
+            <a href="#api-flows" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="git-pull-request" class="w-4 h-4 text-cyan-400"></i> API Workflows
+            </a>
+            <a href="#endpoints" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="code" class="w-4 h-4 text-orange-400"></i> REST API Schemas
+            </a>
+        </aside>
+
+        <!-- Documentation Sheet -->
+        <main class="flex-grow glass rounded-3xl p-6 sm:p-8 border border-white/5 space-y-12">
+            
+            <!-- Header -->
+            <div class="space-y-4">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                    Architecture Specifications
+                </div>
+                <h1 class="text-3xl md:text-5xl font-display font-extrabold text-white tracking-tight">
+                    MalikNode System Architecture & API Design
+                </h1>
+                <p class="text-neutral-400 text-sm font-light leading-relaxed">
+                    Detailed blueprint of our file systems directories, containerized AdGuard Home isolation, WireGuard multi-subnet interfaces, and REST API communication workflows.
+                </p>
+            </div>
+
+            <!-- SECTION 1: DIRECTORIES -->
+            <section id="directories" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="folder" class="text-yellow-400"></i> 1. Directory Structure Organization
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    To keep tenant profiles, databases, and system configuration configurations cleanly organized, MalikNode resides in `/etc/maliknode` and `/var/www/html`:
+                </p>
+                <pre class="p-5 rounded-2xl bg-zinc-950 border border-white/5 font-mono text-xs text-blue-400 overflow-x-auto text-left">
+/etc/maliknode/
+├── central_api/              # Node.js / Python API Daemon Code
+│   ├── config.json           # SQLite DB paths, JWT signing keys, TLS settings
+│   └── database.sqlite       # Central accounts, subdomains, and device schemas
+├── users/                    # Tenant Configurations Folder
+│   ├── user_abcd/            # Tenant "abcd" isolated workspace
+│   │   ├── wg1.conf          # WireGuard wg1 configuration file (Subnet: 10.88.1.0/24)
+│   │   ├── keys/             # Peer private/public key pairs
+│   │   └── adguard_data/     # Persisted volume mapping for user's AdGuard instance
+│   └── user_efgh/
+│       ├── wg2.conf          # WireGuard wg2 configuration file (Subnet: 10.88.2.0/24)
+│       └── adguard_data/
+                </pre>
+            </section>
+
+            <!-- SECTION 2: TENANT ISOLATION -->
+            <section id="tenant-isolation" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="shield-check" class="text-emerald-400"></i> 2. Subnet Separation (WireGuard)
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Each tenant is allocated a completely independent subnet workspace. For instance:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-5 rounded-xl bg-zinc-900/40 border border-white/5 space-y-2 text-left">
+                        <span class="text-[10px] font-bold text-white uppercase tracking-wider font-mono block">Tenant A (abcd.maliknode.app)</span>
+                        <ul class="text-xs text-neutral-400 space-y-1 font-mono">
+                            <li>Interface: <span class="text-blue-400">wg1</span></li>
+                            <li>Subnet Range: <span class="text-blue-400">10.88.1.0/24</span></li>
+                            <li>Tunnel Gateway: <span class="text-blue-400">10.88.1.1</span></li>
+                            <li>UDP Interface Port: <span class="text-blue-400">51821</span></li>
+                        </ul>
+                    </div>
+                    <div class="p-5 rounded-xl bg-zinc-900/40 border border-white/5 space-y-2 text-left">
+                        <span class="text-[10px] font-bold text-white uppercase tracking-wider font-mono block">Tenant B (efgh.maliknode.app)</span>
+                        <ul class="text-xs text-neutral-400 space-y-1 font-mono">
+                            <li>Interface: <span class="text-emerald-400">wg2</span></li>
+                            <li>Subnet Range: <span class="text-emerald-400">10.88.2.0/24</span></li>
+                            <li>Tunnel Gateway: <span class="text-emerald-400">10.88.2.1</span></li>
+                            <li>UDP Interface Port: <span class="text-emerald-400">51822</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: ADGUARD ISOLATION -->
+            <section id="adguard-isolation" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="container" class="text-purple-400"></i> 3. Isolated AdGuard Instances (Docker)
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Instead of sharing a single config dashboard, we instantiate **one lightweight Docker container of AdGuard Home per active client subnet**.
+                </p>
+                <pre class="p-5 rounded-2xl bg-zinc-950 border border-white/5 font-mono text-xs text-blue-400 overflow-x-auto text-left">
+docker run -d \
+  --name adguard_user_abcd \
+  --restart unless-stopped \
+  -p 10.88.1.1:53:53/udp \
+  -p 127.0.0.1:3001:3000 \
+  -v /etc/maliknode/users/user_abcd/adguard_data:/opt/adguardhome/work \
+  adguard/adguardhome
+                </pre>
+                <p class="text-xs text-zinc-500 font-light leading-relaxed">
+                    By binding the DNS service port to <span class="text-white bg-white/5 px-1 py-0.5 rounded font-mono">10.88.1.1:53</span> inside the WireGuard interface, Tenant A resolves their query lists in complete isolation without mixing records with Tenant B.
+                </p>
+            </section>
+
+            <!-- SECTION 4: WORKFLOWS -->
+            <section id="api-flows" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="git-pull-request" class="text-cyan-400"></i> 4. API Communication Workflows
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    When a user makes edits in their browser dashboard, transactions follow structured flows:
+                </p>
+                <div class="p-5 rounded-2xl bg-zinc-950 border border-white/5 text-left space-y-4">
+                    <div class="flex items-center gap-3 pb-3 border-b border-white/5">
+                        <div class="w-8 h-8 rounded bg-cyan-500/10 flex items-center justify-center text-cyan-400"><i data-lucide="user-plus" class="w-4 h-4"></i></div>
+                        <h4 class="text-xs font-bold text-white uppercase font-mono">Workflow A: Signup / Provisioning</h4>
+                    </div>
+                    <ol class="text-xs text-neutral-400 space-y-2.5 font-mono list-decimal pl-4">
+                        <li>Customer clicks select plan and posts data payload to Central Daemon.</li>
+                        <li>API assigns interface number, generates cryptographic keys, and writes local interface parameters.</li>
+                        <li>API spins up an isolated Docker container for the user's DNS server.</li>
+                        <li>API returns success callback containing their active subdomain (`musab.maliknode.app`).</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION 5: SCHEMAS -->
+            <section id="endpoints" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="code" class="text-orange-400"></i> 5. Central API Controller Schema Specifications
+                </h2>
+
+                <div class="space-y-6">
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 text-left space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold font-mono">
+                            <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">POST</span>
+                            <span class="text-white">/api/auth/signup</span>
+                        </div>
+                        <p class="text-xs text-neutral-400 font-light">Registers an account and provisions dedicated WireGuard / AdGuard server instances.</p>
+                        <pre class="p-4 rounded-xl bg-zinc-950 text-[10px] text-blue-400 font-mono">
+{
+  "username": "abcd",
+  "password": "hashed_password",
+  "plan": "Starter",
+  "region": "phoenix"
+}
+                        </pre>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 text-left space-y-3">
+                        <div class="flex items-center gap-2 text-xs font-bold font-mono">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">POST</span>
+                            <span class="text-white">/api/peers</span>
+                        </div>
+                        <p class="text-xs text-neutral-400 font-light">Registers a new peer node inside the user's subnet tunnel configuration.</p>
+                        <pre class="p-4 rounded-xl bg-zinc-950 text-[10px] text-blue-400 font-mono">
+// Headers: Authorization: Bearer &lt;JWT_Token&gt;
+{
+  "device_label": "Musab-iPad"
+}
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-zinc-950/40 py-8 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <span>&copy; 2026 MalikNode VPN. System specs.</span>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span class="text-xs text-neutral-500 font-mono">Spec system online</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
