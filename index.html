@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MalikNode VPN — Managed Hardened WireGuard Networks</title>
     <meta name="description" content="Instant, zero-config managed WireGuard VPN implementations with integrated AdGuard Home and Unbound recursive DNS for secure remote access.">
+    <!-- Rich SEO keywords for top search ranking traffic -->
+    <meta name="keywords" content="maliknode, maliknode vpn, dns.maliknode.app, malik node, free secure dns, adguard unbound vpn, recursive dns vpn, india wireguard vpn, private network, zero logs vpn">
+    
     <!-- Fixed tab Favicon matching dnsmalik tab exact scale/color -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='%23E30613' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='rgba(227,%206,%2019,%200.2)' stroke='%23E30613' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -284,13 +287,15 @@
             box-shadow: 0 0 5px rgba(255,255,255,0.05);
         }
 
-        /* Carousel slides */
-        .slide-hidden { display: none; }
-        .slide-active { display: block; animation: slideFade 0.6s cubic-bezier(0.25, 0.1, 0.25, 1); }
-        @keyframes slideFade {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* Marquee matching dns-v1.html */
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes marquee-reverse { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+        .marquee-wrapper { overflow: hidden; position: relative; }
+        .marquee-wrapper::before, .marquee-wrapper::after { content: ''; position: absolute; top: 0; bottom: 0; width: 120px; z-index: 2; pointer-events: none; }
+        .marquee-wrapper::before { left: 0; background: linear-gradient(to right, #030303, transparent); }
+        .marquee-wrapper::after { right: 0; background: linear-gradient(to left, #030303, transparent); }
+        .marquee-track { display: flex; gap: 40px; animation: marquee 30s linear infinite; }
+        .marquee-track-reverse { animation: marquee-reverse 35s linear infinite; }
     </style>
 </head>
 <body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden transition-all duration-500 grid-bg">
@@ -338,9 +343,9 @@
 
     <!-- Centered Hero Section with Dashboard Mockup in the Background -->
     <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-24 overflow-hidden">
-        <!-- Dashboard Mockup in the Absolute Background (faded like globe background in dnsmalik) -->
-        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none opacity-[0.09] lg:opacity-[0.14] scale-90 lg:scale-100 transition-opacity duration-500">
-            <div class="w-full max-w-5xl rounded-3xl overflow-hidden glass p-3 border border-white/10">
+        <!-- Dashboard Mockup in the Absolute Background (glowing and highly visible now) -->
+        <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none opacity-[0.16] lg:opacity-[0.24] scale-[0.8] sm:scale-90 lg:scale-100 transition-opacity duration-500">
+            <div class="w-full max-w-5xl rounded-3xl overflow-hidden glass p-3 border border-white/10 shadow-[0_0_80px_rgba(59,130,246,0.12)]">
                 <div class="rounded-2xl overflow-hidden border border-white/5 bg-zinc-950/90 text-left font-mono">
                     <div class="h-10 bg-zinc-900 border-b border-white/5 px-4 flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -405,6 +410,14 @@
                     Learn More
                     <i data-lucide="arrow-down" class="w-4 h-4"></i>
                 </button>
+            </div>
+
+            <!-- Clear indicators showing exact product features so user gets the idea immediately -->
+            <div class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-neutral-500 font-mono">
+                <span class="flex items-center gap-1.5"><i data-lucide="shield" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i> Hardened WireGuard Tunnel</span>
+                <span class="flex items-center gap-1.5"><i data-lucide="shield-alert" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i> AdGuard Tracker Blocking</span>
+                <span class="flex items-center gap-1.5"><i data-lucide="globe" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i> Unbound Recursive Privacy</span>
+                <span class="flex items-center gap-1.5"><i data-lucide="eye-off" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i> Verified Zero-Log Nodes</span>
             </div>
         </div>
     </section>
@@ -652,10 +665,10 @@
 
             <!-- Improvised OS download grid using native vector logos -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-                <!-- Windows -->
+                <!-- Windows with correct standalone flag logo -->
                 <a href="https://download.wireguard.com/windows-client/wireguard-installer.exe" target="_blank" class="os-card reveal group">
                     <div class="os-icon w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-5">
-                        <iconify-icon icon="logos:microsoft-windows" class="text-2xl"></iconify-icon>
+                        <iconify-icon icon="logos:microsoft-windows-icon" class="text-2xl"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">Windows</h3>
                     <p class="text-xs text-neutral-500">7 / 8 / 10 / 11</p>
@@ -665,14 +678,14 @@
                     </div>
                 </a>
 
-                <!-- macOS -->
-                <a href="https://apps.apple.com/us/app/wireguard/id1451685025" target="_blank" class="os-card reveal group" style="transition-delay:0.05s">
-                    <div class="os-icon w-14 h-14 rounded-2xl bg-neutral-500/10 flex items-center justify-center mx-auto mb-5">
+                <!-- macOS with highlight border/glow to make it pop -->
+                <a href="https://apps.apple.com/us/app/wireguard/id1451685025" target="_blank" class="os-card reveal group" style="transition-delay:0.05s; border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 25px rgba(255, 255, 255, 0.05);">
+                    <div class="os-icon w-14 h-14 rounded-2xl bg-neutral-500/15 flex items-center justify-center mx-auto mb-5">
                         <iconify-icon icon="logos:apple" class="text-2xl text-white"></iconify-icon>
                     </div>
                     <h3 class="text-sm font-medium mb-1 text-white">macOS</h3>
-                    <p class="text-xs text-neutral-500">11+ (Intel & Apple Silicon)</p>
-                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
+                    <p class="text-xs text-neutral-500 font-semibold text-neutral-300">11+ (Intel & Apple Silicon)</p>
+                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-300 group-hover:text-white transition-colors">
                         <span>App Store</span>
                         <i data-lucide="external-link" class="w-3 h-3"></i>
                     </div>
@@ -730,8 +743,8 @@
     </section>
 
     <!-- Interactive Config Generator Modal -->
-    <div id="configModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="w-full max-w-lg glass rounded-3xl p-8 border border-white/10 shadow-2xl relative">
+    <div id="configModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="w-full max-w-lg glass rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative">
             <button onclick="closeConfigModal()" class="absolute top-6 right-6 text-neutral-400 hover:text-white transition-colors">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -785,7 +798,7 @@
                 </h2>
             </div>
 
-            <!-- Improvised Network Mesh (Thinking outside the box - replaced earth shape outline with dynamic core hub topology diagram) -->
+            <!-- Improvised Network Mesh (Replaced bad earth shape completely with network topology hub) -->
             <div class="relative w-full max-w-4xl mx-auto aspect-[2/1] rounded-3xl bg-white/[0.01] border border-white/5 overflow-hidden flex items-center justify-center reveal">
                 <!-- SVG Network Topology Connections -->
                 <svg class="absolute inset-0 w-full h-full" viewBox="0 0 800 400" fill="none">
@@ -807,8 +820,8 @@
                 </svg>
 
                 <!-- Core MalikNode Gateway Hub (Center Node) -->
-                <div class="absolute w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex flex-col items-center justify-center text-white z-20 shadow-2xl shadow-blue-500/30 dynamic-bg-color">
-                    <i data-lucide="shield" class="w-6 h-6"></i>
+                <div class="absolute w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex flex-col items-center justify-center text-white z-20 shadow-2xl shadow-blue-500/30 dynamic-bg-color">
+                    <i data-lucide="shield" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                 </div>
 
                 <!-- Branching Nodes -->
@@ -947,53 +960,26 @@
         </div>
     </section>
 
-    <!-- TESTIMONIALS SLIDER CAROUSEL (Requested above FAQ section with big font) -->
-    <section class="py-32 relative border-t border-white/5 overflow-hidden">
-        <div class="max-w-4xl mx-auto px-6 relative z-10 text-center">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
-                <i data-lucide="message-square" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i>
-                <span class="text-xs text-neutral-400 font-medium">User Testimonials</span>
-            </div>
-
-            <!-- Big Font Slider Container -->
-            <div class="relative min-h-[160px] md:min-h-[120px] mb-8">
-                <!-- Slide 1 -->
-                <div class="testimonial-slide slide-active">
-                    <p class="text-2xl md:text-4xl font-display font-extrabold text-white text-glow leading-snug">
-                        "Raw WireGuard performance with zero configuration bloat. The cleanest client config experience I've ever deployed."
-                    </p>
-                    <div class="mt-6 text-sm text-neutral-400 font-mono">
-                        <span class="text-white font-sans font-semibold">Marcus K.</span> &middot; Software Architect
-                    </div>
-                </div>
-                <!-- Slide 2 -->
-                <div class="testimonial-slide slide-hidden">
-                    <p class="text-2xl md:text-4xl font-display font-extrabold text-white text-glow leading-snug">
-                        "Double-layered DNS filtering intercepts tracking cookies and malware requests before they ever touch our browser."
-                    </p>
-                    <div class="mt-6 text-sm text-neutral-400 font-mono">
-                        <span class="text-white font-sans font-semibold">Sarah L.</span> &middot; Security Analyst
-                    </div>
-                </div>
-                <!-- Slide 3 -->
-                <div class="testimonial-slide slide-hidden">
-                    <p class="text-2xl md:text-4xl font-display font-extrabold text-white text-glow leading-snug">
-                        "MalikNode completely isolated our freelancers' network devices, securing our private databases from scanning threats."
-                    </p>
-                    <div class="mt-6 text-sm text-neutral-400 font-mono">
-                        <span class="text-white font-sans font-semibold">James R.</span> &middot; CTO, Stackwise Group
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slider Nav Controls -->
-            <div class="flex items-center justify-center gap-4">
-                <button onclick="prevSlide()" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:scale-105 active:scale-95 transition-all text-white">
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
-                </button>
-                <button onclick="nextSlide()" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:scale-105 active:scale-95 transition-all text-white">
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </button>
+    <!-- REVERSE TECH MARQUEE (Replaced testimonials carousel as requested) -->
+    <section class="py-6 border-y border-white/5 relative z-10 overflow-hidden bg-zinc-950/20">
+        <div class="marquee-wrapper">
+            <div class="marquee-track marquee-track-reverse items-center">
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">MALIKNODE</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">PRIVATE</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">FAST</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">UNSTOPPABLE</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">MALIKNODE</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">PRIVATE</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">FAST</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
+                <span class="text-neutral-700 text-6xl md:text-8xl font-medium whitespace-nowrap tracking-tighter uppercase">UNSTOPPABLE</span>
+                <span class="text-neutral-800 text-6xl md:text-8xl font-light whitespace-nowrap tracking-tighter">•</span>
             </div>
         </div>
     </section>
@@ -1262,32 +1248,6 @@
             closeConfigModal();
             showToast('Success: WireGuard profile downloaded!');
         }
-
-        // Testimonial Carousel logic
-        let currentSlideIdx = 0;
-        const slides = document.querySelectorAll('.testimonial-slide');
-        
-        function showSlide(idx) {
-            slides.forEach(slide => {
-                slide.classList.remove('slide-active');
-                slide.classList.add('slide-hidden');
-            });
-            slides[idx].classList.remove('slide-hidden');
-            slides[idx].classList.add('slide-active');
-        }
-        
-        function nextSlide() {
-            currentSlideIdx = (currentSlideIdx + 1) % slides.length;
-            showSlide(currentSlideIdx);
-        }
-        
-        function prevSlide() {
-            currentSlideIdx = (currentSlideIdx - 1 + slides.length) % slides.length;
-            showSlide(currentSlideIdx);
-        }
-        
-        // Auto-play carousel every 6 seconds
-        setInterval(nextSlide, 6000);
 
         // Toast notification timer
         let toastTimer;
