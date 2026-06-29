@@ -250,6 +250,24 @@ body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow-x:hid
       <p class="text-center text-sm text-neutral-500 mt-6">Don't have an account? <button class="auth-link" onclick="showPanel('signup')">Sign up free</button></p>
     </div>
 
+    <!-- ===== OTP PANEL ===== -->
+    <div id="otpPanel" class="form-panel hidden">
+      <h1 class="text-2xl font-semibold text-center tracking-tight mb-1.5">Verify your email</h1>
+      <p class="text-sm text-neutral-500 text-center mb-8 font-light" id="otpInstruct">Enter the 6-digit code sent to your email.</p>
+
+      <form id="otpForm" onsubmit="submitOTP(event)" class="space-y-4">
+        <div class="input-group">
+          <input type="text" id="otpCode" class="input-field text-center font-mono text-lg tracking-[0.2em] !pl-4" placeholder="••••••" required maxlength="6">
+          <label class="float-label !left-1/2 !-translate-x-1/2 font-mono">Verification Code</label>
+        </div>
+        <button type="submit" class="btn-auth btn-auth-primary" id="otpBtn">
+          <span id="otpBtnText">Verify Code</span>
+          <div class="spinner hidden" id="otpSpinner"></div>
+        </button>
+      </form>
+      <p class="text-center text-sm text-neutral-500 mt-6">Didn't receive the code? <button class="auth-link" type="button" onclick="resendOTP()">Resend OTP</button></p>
+    </div>
+
     <!-- ===== SUCCESS PANEL ===== -->
     <div id="successPanel" class="form-panel hidden">
       <div class="success-screen">
@@ -331,7 +349,7 @@ function setRipple(e, btn) {
 
 // ===== PANELS =====
 function showPanel(panel) {
-  const panels = { signup: 'signupPanel', login: 'loginPanel', success: 'successPanel' };
+  const panels = { signup: 'signupPanel', login: 'loginPanel', otp: 'otpPanel', success: 'successPanel' };
   Object.values(panels).forEach(id => {
     const el = document.getElementById(id);
     el.classList.add('hidden');
@@ -427,6 +445,9 @@ lucide.createIcons();
 }
 
 // ===== SIGNUP =====
+// Temporary fields cache for verification submission
+let pendingReg = { name: '', email: '', password: '' };
+
 async function handleSignup(e) {
   e.preventDefault();
   const name = document.getElementById('signupName').value.trim();
@@ -450,15 +471,53 @@ async function handleSignup(e) {
   spinner.classList.remove('hidden');
 
   try {
-    // Format name to create clean subdomain (lowercase alphanumeric)
-    const subdomain = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    pendingReg = { name, email, password: pass };
+    
+    // Call API to send OTP code
+    const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      showToast(data.message);
+      document.getElementById('otpInstruct').textContent = `Verification code sent to ${email}`;
+      showPanel('otp');
+    } else {
+      showToast(data.detail || "Failed to send verification code", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    spinner.classList.add('hidden');
+  }
+}
+
+async function submitOTP(e) {
+  e.preventDefault();
+  const code = document.getElementById('otpCode').value.trim();
+  const btn = document.getElementById('otpBtn');
+  const btnText = document.getElementById('otpBtnText');
+  const spinner = document.getElementById('otpSpinner');
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  spinner.classList.remove('hidden');
+
+  try {
+    const subdomain = pendingReg.name.toLowerCase().replace(/[^a-z0-9]/g, '');
     const res = await fetch("https://api.maliknode.app/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: email.split("@")[0],
-        password: pass,
+        username: pendingReg.email.split("@")[0],
+        password: pendingReg.password,
         subdomain: subdomain || "user" + Math.floor(Math.random() * 1000),
+        email: pendingReg.email,
+        otp: code,
         plan: "Starter",
         region: "NYC"
       })
@@ -469,7 +528,7 @@ async function handleSignup(e) {
       showPanel('success');
       runSuccessSteps();
     } else {
-      showToast(data.detail || "Signup registration failed", "error");
+      showToast(data.detail || "Invalid code. Please try again.", "error");
     }
   } catch (err) {
     showToast("Server connection error", "error");
@@ -477,6 +536,25 @@ async function handleSignup(e) {
     btn.disabled = false;
     btnText.classList.remove('hidden');
     spinner.classList.add('hidden');
+  }
+}
+
+async function resendOTP() {
+  showToast("Resending code...");
+  try {
+    const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: pendingReg.email })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      showToast("Verification code resent.");
+    } else {
+      showToast("Failed to resend code.", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
   }
 }
 
