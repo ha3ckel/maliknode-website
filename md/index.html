@@ -241,13 +241,13 @@ docker run -d \
                 </p>
             </section>
 
-            <!-- SECTION 6: SCALE UP CLUSTER -->
+            <!-- SECTION 6: SCALE UP CLUSTER & DROplet DEPLOYMENT -->
             <section id="multi-vps" class="space-y-4 scroll-mt-24">
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i data-lucide="server" class="text-cyan-400"></i> 6. Horizontal Scaling Cluster (Using your 3-Core / 18GB RAM VPS)
+                    <i data-lucide="server" class="text-cyan-400"></i> 6. Horizontal Scaling & DigitalOcean Droplet Deployment
                 </h2>
                 <p class="text-sm text-neutral-400 font-light leading-relaxed">
-                    Since you have a powerful second VPS (3-Core, 18GB RAM) linked via a local private interface network (`10.1.x.x`), we can implement a horizontal cluster topology:
+                    When scaling your user capacity, you can link your primary 1-Core VPS with your secondary 3-Core / 18GB RAM VPS. This creates a highly secure, distributed cluster topology that prevents configuration changes or database load from interfering with active WireGuard UDP tunnels.
                 </p>
                 
                 <!-- Scaling Topology Visualizer -->
@@ -257,28 +257,60 @@ docker run -d \
                         <!-- Primary Front Node -->
                         <div class="p-4 rounded-xl bg-zinc-900 border border-white/10 w-full md:w-56 text-left">
                             <span class="text-xs font-bold text-white block mb-1">Frontend Controller</span>
-                            <span class="text-zinc-500 block">Current VPS (6GB RAM)</span>
+                            <span class="text-zinc-500 block">Primary VPS (6GB RAM)</span>
                             <hr class="border-white/5 my-2">
-                            <span class="text-blue-400 block">&bull; Nginx TLS Gate</span>
-                            <span class="text-blue-400 block">&bull; SQLite DB</span>
+                            <span class="text-blue-400 block">&bull; Nginx TLS Gateway</span>
+                            <span class="text-blue-400 block">&bull; Accounts SQLite DB</span>
                             <span class="text-blue-400 block">&bull; API Daemon Port 8085</span>
                         </div>
 
                         <!-- Private Interconnection -->
                         <div class="flex flex-col items-center justify-center text-zinc-600">
                             <i data-lucide="move-right" class="w-6 h-6 hidden md:block"></i>
-                            <span class="text-[9px] uppercase tracking-wider">Private network (10.1.x.x)</span>
+                            <span class="text-[9px] uppercase tracking-wider font-semibold text-cyan-400">Private VPC (10.1.x.x)</span>
                         </div>
 
                         <!-- Backend Worker Node -->
                         <div class="p-4 rounded-xl bg-zinc-900 border border-white/10 w-full md:w-56 text-left border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.05)]">
                             <span class="text-xs font-bold text-cyan-400 block mb-1">Tunnel Worker Node</span>
-                            <span class="text-zinc-500 block">Second VPS (18GB RAM)</span>
+                            <span class="text-zinc-500 block">Droplet VPS (18GB RAM)</span>
                             <hr class="border-white/5 my-2">
-                            <span class="text-cyan-400 block">&bull; 500+ WireGuard peers</span>
+                            <span class="text-cyan-400 block">&bull; 500+ WireGuard Tunnels</span>
                             <span class="text-cyan-400 block">&bull; Docker AdGuard Containers</span>
                         </div>
 
+                    </div>
+                </div>
+
+                <!-- DigitalOcean Droplet Onboarding Configuration -->
+                <div class="space-y-4 pt-4">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider font-mono">Step-by-Step Backend Scaling Execution:</h3>
+                    
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-3 text-left text-xs leading-relaxed">
+                        <p class="font-bold text-white"><i data-lucide="plus" class="inline-block w-4 h-4 text-cyan-400 mr-1.5"></i> 1. Provision droplet via DigitalOcean Portal</p>
+                        <p class="text-neutral-400">Deploy a new Ubuntu Droplet inside your existing DigitalOcean Project. In the networking selection tab, ensure the **VPC Network** checkbox is enabled. This assigns your droplet a private IP address within the `10.1.x.x` subnet pool, allowing secure local communication with your primary VPS without routing traffic over the public internet.</p>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-3 text-left text-xs leading-relaxed">
+                        <p class="font-bold text-white"><i data-lucide="settings" class="inline-block w-4 h-4 text-cyan-400 mr-1.5"></i> 2. Install WireGuard & Docker on the Droplet</p>
+                        <p class="text-neutral-400">Connect to your new droplet and run the server provisioning dependencies:</p>
+                        <pre class="p-3 rounded-lg bg-zinc-950 text-[10px] text-blue-400 font-mono">
+sudo apt update && sudo apt install -y wireguard docker.io
+sudo systemctl enable --now docker
+                        </pre>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 space-y-3 text-left text-xs leading-relaxed">
+                        <p class="font-bold text-white"><i data-lucide="shuffle" class="inline-block w-4 h-4 text-cyan-400 mr-1.5"></i> 3. Set Up Private API Communication Forwarding</p>
+                        <p class="text-neutral-400">On your primary Frontend VPS, configure your central API daemon config to talk directly to the Droplet IP. E.g. instead of running local shell scripts, the Frontend API daemon uses SSH keys or lightweight private HTTPS tokens to trigger configuration creations on the Worker VPS:</p>
+                        <pre class="p-3 rounded-lg bg-zinc-950 text-[10px] text-blue-400 font-mono">
+// config.json on Frontend VPS
+{
+  "database": "./database.sqlite",
+  "worker_node": "10.1.20.15", // Droplet Private IP
+  "worker_ssh_key": "/etc/maliknode/keys/worker_ssh_id"
+}
+                        </pre>
                     </div>
                 </div>
             </section>
