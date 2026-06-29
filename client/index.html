@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MalikNode — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{inter:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:rgba(59,130,246,0.3);border-radius:3px}
+
+@keyframes pulse-glow{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.8;transform:scale(1.05)}}
+@keyframes ping-ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(2.5);opacity:0}}
+@keyframes dash-flow{to{stroke-dashoffset:-20}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes wave-bar{0%,100%{height:4px}50%{height:16px}}
+@keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes data-flow{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}
+
+.animate-fade-up{animation:fadeUp .6s ease-out forwards;opacity:0}
+.animate-scale-in{animation:scaleIn .4s ease-out forwards;opacity:0}
+
+.sidebar{width:260px;height:100vh;position:fixed;left:0;top:0;background:rgba(8,8,8,0.95);backdrop-filter:blur(20px);border-right:1px solid rgba(255,255,255,0.05);z-index:50;display:flex;flex-direction:column;transition:transform .3s}
+.main-content{margin-left:260px;min-height:100vh}
+
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:10px;cursor:pointer;transition:all .2s;color:rgb(163,163,163);font-size:13px;font-weight:400;position:relative}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:rgb(212,212,212)}
+.nav-item.active{background:rgba(59,130,246,0.08);color:#fff}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:#3b82f6;border-radius:0 3px 3px 0}
+
+.stat-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;transition:all .3s}
+.stat-card:hover{border-color:rgba(255,255,255,0.1);transform:translateY(-2px)}
+
+.glass-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;overflow:hidden}
+
+.btn-primary{background:#fff;color:#000;font-weight:500;font-size:13px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{transform:scale(1.02);box-shadow:0 0 20px rgba(255,255,255,0.1)}
+.btn-secondary{background:rgba(255,255,255,0.05);color:#fff;font-weight:500;font-size:13px;padding:10px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-secondary:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15)}
+.btn-danger{background:rgba(239,68,68,0.1);color:#ef4444;font-weight:500;font-size:13px;padding:10px 20px;border-radius:10px;border:1px solid rgba(239,68,68,0.2);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-danger:hover{background:rgba(239,68,68,0.15)}
+
+.toggle{position:relative;width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,0.1);cursor:pointer;transition:background .3s;flex-shrink:0}
+.toggle.on{background:rgba(168,85,247,0.5)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .3s}
+.toggle.on::after{transform:translateX(20px)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-content{background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;transform:scale(.95);transition:transform .3s}
+.modal-overlay.open .modal-content{transform:scale(1)}
+
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);backdrop-filter:blur(20px);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:10px;z-index:200;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.25,.1,.25,1);font-size:13px;color:#22c55e}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:#ef4444}
+
+.peer-row{transition:background .2s}.peer-row:hover{background:rgba(255,255,255,0.02)}
+.rule-row{transition:background .2s}.rule-row:hover{background:rgba(255,255,255,0.02)}
+
+.mesh-node{cursor:pointer;transition:transform .2s}.mesh-node:hover{transform:scale(1.1)}
+.mesh-line{stroke-dasharray:6 4;animation:data-flow 1s linear infinite}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:500}
+.badge-green{background:rgba(34,197,94,0.1);color:#22c55e}
+.badge-red{background:rgba(239,68,68,0.1);color:#ef4444}
+.badge-yellow{background:rgba(234,179,8,0.1);color:#eab308}
+.badge-blue{background:rgba(59,130,246,0.1);color:#3b82f6}
+.badge-blue{background:rgba(59,130,246,0.1);color:#3b82f6}
+
+.tab{padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s;color:rgb(163,163,163)}
+.tab:hover{color:rgb(212,212,212)}
+.tab.active{background:rgba(59,130,246,0.1);color:#3b82f6}
+
+.input{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;width:100%;outline:none;transition:border-color .2s;font-family:'Inter',sans-serif}
+.input:focus{border-color:rgba(168,85,247,0.4)}
+.input::placeholder{color:rgb(82,82,82)}
+
+.wave-bar{width:3px;border-radius:2px;background:linear-gradient(to top,#3b82f6,#3b82f6);animation:wave-bar 1.2s ease-in-out infinite}
+
+.page{display:none}.page.active{display:block}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main-content{margin-left:0}
+  .mobile-toggle{display:flex!important}
+}
+</style>
+<script>
+  if (!localStorage.getItem("mn_token")) {
+    window.location.href = "/login.html" + window.location.search;
+  }
+</script>
+</head>
+<body class="font-inter">
+
+<!-- Toast -->
+<div id="toast" class="toast"><i data-lucide="check-circle" class="w-4 h-4"></i><span id="toast-msg">Done!</span></div>
+
+<!-- Add Peer Modal -->
+<div id="addPeerModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-content p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-lg font-medium">Add New Peer</h3>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <div id="modalStep1">
+      <div class="space-y-4">
+        <div><label class="text-xs text-neutral-500 mb-1.5 block">Peer Name</label><input id="peerName" class="input" placeholder="e.g. MacBook-Pro"></div>
+        <div><label class="text-xs text-neutral-500 mb-1.5 block">Allowed IPs (comma separated)</label><input id="peerIPs" class="input font-mono text-xs" placeholder="10.0.0.3/32" value="10.0.0.3/32"></div>
+        <div><label class="text-xs text-neutral-500 mb-1.5 block">DNS</label><input id="peerDNS" class="input font-mono text-xs" placeholder="1.1.1.1" value="1.1.1.1"></div>
+        <div class="flex items-center gap-3">
+          <div id="meshToggle" class="toggle on" onclick="this.classList.toggle('on')"></div>
+          <span class="text-sm text-neutral-400">Allow mesh networking (see other peers)</span>
+        </div>
+        <button onclick="generatePeerConfig()" class="btn-primary w-full justify-center mt-2"><i data-lucide="key" class="w-4 h-4"></i>Generate Configuration</button>
+      </div>
+    </div>
+    <div id="modalStep2" style="display:none">
+      <div class="text-center mb-6">
+        <div class="w-3 h-3 rounded-full bg-green-500 mx-auto mb-3 animate-pulse"></div>
+        <p class="text-sm text-neutral-400">Configuration generated. Scan the QR code or download the config file.</p>
+      </div>
+      <div class="flex justify-center mb-6">
+        <canvas id="qrCanvas" width="200" height="200" class="rounded-xl bg-white p-2"></canvas>
+      </div>
+      <div class="glass-card p-4 mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-neutral-500 font-mono">Configuration File</span>
+          <div class="flex gap-2">
+            <button onclick="copyConfig()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"><i data-lucide="copy" class="w-3 h-3"></i>Copy</button>
+            <button onclick="downloadConfig()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i>Download</button>
+          </div>
+        </div>
+        <pre id="configPreview" class="text-[11px] text-neutral-400 font-mono leading-relaxed overflow-x-auto whitespace-pre max-h-40 overflow-y-auto"></pre>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="resetModal()" class="btn-secondary flex-1 justify-center"><i data-lucide="plus" class="w-4 h-4"></i>Add Another</button>
+        <button onclick="closeModal()" class="btn-primary flex-1 justify-center">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="p-5 border-b border-white/5">
+    <a href="#" class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center"><i data-lucide="shield" class="w-4 h-4 text-white"></i></div>
+      <span class="font-semibold text-base tracking-tight">MalikNode</span>
+    </a>
+  </div>
+  <div class="flex-1 p-3 space-y-1 overflow-y-auto">
+    <div class="text-[10px] text-neutral-600 uppercase tracking-widest px-3 pt-3 pb-2">Main</div>
+    <div class="nav-item active" onclick="navigate('overview',this)"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>Overview</div>
+    <div class="nav-item" onclick="navigate('mesh',this)"><i data-lucide="network" class="w-4 h-4"></i>Mesh Network</div>
+    <div class="nav-item" onclick="navigate('peers',this)"><i data-lucide="users" class="w-4 h-4"></i>Peers<span id="peerCount" class="ml-auto text-[11px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-md font-mono">4</span></div>
+    <div class="text-[10px] text-neutral-600 uppercase tracking-widest px-3 pt-5 pb-2">Security</div>
+    <div class="nav-item" onclick="navigate('firewall',this)"><i data-lucide="shield-alert" class="w-4 h-4"></i>Firewall</div>
+    <div class="nav-item" onclick="navigate('dns',this)"><i data-lucide="globe" class="w-4 h-4"></i>DNS Filtering</div>
+    <div class="text-[10px] text-neutral-600 uppercase tracking-widest px-3 pt-5 pb-2">Config</div>
+    <div class="nav-item" onclick="navigate('config',this)"><i data-lucide="file-code" class="w-4 h-4"></i>Configuration</div>
+    <div class="nav-item" onclick="navigate('settings',this)"><i data-lucide="settings" class="w-4 h-4"></i>Settings</div>
+  </div>
+  <div class="p-4 border-t border-white/5">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-xs font-medium">A</div>
+      <div class="flex-1 min-w-0"><div class="text-sm font-medium truncate">musab@maliknode</div><div class="text-[11px] text-neutral-500">Pro Plan</div></div>
+      <button class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><i data-lucide="log-out" class="w-3.5 h-3.5 text-neutral-500"></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile Toggle -->
+<button class="mobile-toggle hidden fixed top-4 left-4 z-[60] w-10 h-10 rounded-xl bg-black/80 backdrop-blur border border-white/10 items-center justify-center" onclick="document.getElementById('sidebar').classList.toggle('open')"><i data-lucide="menu" class="w-4 h-4"></i></button>
+
+<!-- Main Content -->
+<div class="main-content">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-40 h-14 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6">
+    <div class="flex items-center gap-3">
+      <h2 id="pageTitle" class="text-sm font-medium">Overview</h2>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-green-500/10"><div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div><span class="text-[11px] text-green-400 font-medium">Connected</span></div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="headerWave" class="flex items-end gap-0.5 h-4">
+        <div class="wave-bar" style="animation-delay:0s;width:2px"></div>
+        <div class="wave-bar" style="animation-delay:.15s;width:2px"></div>
+        <div class="wave-bar" style="animation-delay:.3s;width:2px"></div>
+        <div class="wave-bar" style="animation-delay:.45s;width:2px"></div>
+        <div class="wave-bar" style="animation-delay:.6s;width:2px"></div>
+      </div>
+      <span class="text-xs text-neutral-500 font-mono" id="headerSpeed">↓ 42.3 ↑ 128.7 Mbps</span>
+      <button class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors relative"><i data-lucide="bell" class="w-4 h-4 text-neutral-400"></i><div class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500"></div></button>
+    </div>
+  </header>
+
+  <!-- ==================== OVERVIEW PAGE ==================== -->
+  <div id="page-overview" class="page active p-6 space-y-6">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-3"><div class="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center"><i data-lucide="wifi" class="w-4 h-4 text-green-400"></i></div><span class="badge badge-green">Live</span></div>
+        <div class="text-2xl font-medium">4<span class="text-neutral-500 text-sm font-normal">/10</span></div>
+        <div class="text-xs text-neutral-500 mt-1">Online Peers</div>
+      </div>
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-3"><div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><i data-lucide="arrow-down" class="w-4 h-4 text-blue-400"></i></div></div>
+        <div class="text-2xl font-medium">128.7<span class="text-neutral-500 text-sm font-normal"> Mbps</span></div>
+        <div class="text-xs text-neutral-500 mt-1">Download Speed</div>
+      </div>
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-3"><div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><i data-lucide="arrow-up" class="w-4 h-4 text-blue-400"></i></div></div>
+        <div class="text-2xl font-medium">42.3<span class="text-neutral-500 text-sm font-normal"> Mbps</span></div>
+        <div class="text-xs text-neutral-500 mt-1">Upload Speed</div>
+      </div>
+      <div class="stat-card">
+        <div class="flex items-center justify-between mb-3"><div class="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center"><i data-lucide="clock" class="w-4 h-4 text-orange-400"></i></div></div>
+        <div class="text-2xl font-medium">14d<span class="text-neutral-500 text-sm font-normal"> 7h</span></div>
+        <div class="text-xs text-neutral-500 mt-1">Connection Uptime</div>
+      </div>
+    </div>
+
+    <!-- Traffic Chart + Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 glass-card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div><h3 class="text-sm font-medium">Network Traffic</h3><p class="text-xs text-neutral-500 mt-0.5">Last 60 seconds</p></div>
+          <div class="flex gap-4 text-xs">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Download</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Upload</span>
+          </div>
+        </div>
+        <canvas id="trafficChart" height="180" class="w-full"></canvas>
+      </div>
+      <div class="space-y-4">
+        <div class="glass-card p-5">
+          <h3 class="text-sm font-medium mb-4">Quick Actions</h3>
+          <div class="space-y-2">
+            <button onclick="openModal()" class="btn-primary w-full justify-center text-xs"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add New Peer</button>
+            <button onclick="navigate('mesh',document.querySelectorAll('.nav-item')[1])" class="btn-secondary w-full justify-center text-xs"><i data-lucide="network" class="w-3.5 h-3.5"></i>View Mesh Map</button>
+            <button onclick="navigate('config',document.querySelectorAll('.nav-item')[5])" class="btn-secondary w-full justify-center text-xs"><i data-lucide="qr-code" class="w-3.5 h-3.5"></i>Show QR Code</button>
+          </div>
+        </div>
+        <div class="glass-card p-5">
+          <h3 class="text-sm font-medium mb-3">Transfer This Month</h3>
+          <div class="flex items-end gap-2 mb-2"><span class="text-2xl font-medium">847</span><span class="text-sm text-neutral-500 mb-0.5">GB</span></div>
+          <div class="h-1.5 rounded-full bg-white/5 overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600" style="width:56%"></div></div>
+          <div class="flex justify-between text-[10px] text-neutral-600 mt-1.5"><span>847 GB used</span><span>Unlimited</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Peers -->
+    <div class="glass-card">
+      <div class="flex items-center justify-between p-5 border-b border-white/5">
+        <h3 class="text-sm font-medium">Active Peers</h3>
+        <button onclick="navigate('peers',document.querySelectorAll('.nav-item')[2])" class="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">View All <i data-lucide="arrow-right" class="w-3 h-3"></i></button>
+      </div>
+      <div class="divide-y divide-white/[0.03]">
+        <div class="peer-row flex items-center gap-4 p-4 px-5">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><i data-lucide="laptop" class="w-4 h-4 text-blue-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium">MacBook-Pro</div><div class="text-xs text-neutral-500 font-mono">10.0.0.2</div></div>
+          <span class="badge badge-green">Online</span>
+          <span class="text-xs text-neutral-500 font-mono hidden sm:block">↓ 45.2 ↑ 12.1</span>
+        </div>
+        <div class="peer-row flex items-center gap-4 p-4 px-5">
+          <div class="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center"><i data-lucide="smartphone" class="w-4 h-4 text-green-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium">iPhone-15</div><div class="text-xs text-neutral-500 font-mono">10.0.0.3</div></div>
+          <span class="badge badge-green">Online</span>
+          <span class="text-xs text-neutral-500 font-mono hidden sm:block">↓ 28.4 ↑ 8.3</span>
+        </div>
+        <div class="peer-row flex items-center gap-4 p-4 px-5">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><i data-lucide="server" class="w-4 h-4 text-blue-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium">Home-Server</div><div class="text-xs text-neutral-500 font-mono">10.0.0.4</div></div>
+          <span class="badge badge-green">Online</span>
+          <span class="text-xs text-neutral-500 font-mono hidden sm:block">↓ 52.1 ↑ 18.9</span>
+        </div>
+        <div class="peer-row flex items-center gap-4 p-4 px-5">
+          <div class="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center"><i data-lucide="tablet" class="w-4 h-4 text-orange-400"></i></div>
+          <div class="flex-1 min-w-0"><div class="text-sm font-medium">iPad-Air</div><div class="text-xs text-neutral-500 font-mono">10.0.0.5</div></div>
+          <span class="badge badge-yellow">Connecting</span>
+          <span class="text-xs text-neutral-500 font-mono hidden sm:block">— —</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MESH NETWORK PAGE ==================== -->
+  <div id="page-mesh" class="page p-6 space-y-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="stat-card"><div class="text-xs text-neutral-500 mb-1">Mesh Connections</div><div class="text-xl font-medium">6</div></div>
+      <div class="stat-card"><div class="text-xs text-neutral-500 mb-1">Mesh Latency (avg)</div><div class="text-xl font-medium text-green-400">3.2<span class="text-sm text-neutral-500">ms</span></div></div>
+      <div class="stat-card"><div class="text-xs text-neutral-500 mb-1">Direct P2P</div><div class="text-xl font-medium">4</div></div>
+      <div class="stat-card"><div class="text-xs text-neutral-500 mb-1">Relayed</div><div class="text-xl font-medium">2</div></div>
+    </div>
+    <div class="glass-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div><h3 class="text-sm font-medium">Network Topology</h3><p class="text-xs text-neutral-500 mt-0.5">Hover over nodes for details · Lines show active mesh connections</p></div>
+        <div class="flex items-center gap-4 text-[11px]">
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span>Online</span>
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-yellow-500"></span>Connecting</span>
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-neutral-600"></span>Offline</span>
+        </div>
+      </div>
+      <svg id="meshSvg" viewBox="0 0 800 450" class="w-full" style="max-height:500px"></svg>
+    </div>
+    <div class="glass-card p-5">
+      <h3 class="text-sm font-medium mb-4">Mesh Connection Table</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="text-xs text-neutral-500 border-b border-white/5">
+            <th class="text-left py-3 px-3 font-medium">From</th><th class="text-left py-3 px-3 font-medium">To</th><th class="text-left py-3 px-3 font-medium">Type</th><th class="text-left py-3 px-3 font-medium">Latency</th><th class="text-left py-3 px-3 font-medium">Status</th>
+          </tr></thead>
+          <tbody id="meshTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PEERS PAGE ==================== -->
+  <div id="page-peers" class="page p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <div><h3 class="text-sm font-medium">All Peers</h3><p class="text-xs text-neutral-500 mt-0.5">Manage devices connected to your network</p></div>
+      <button onclick="openModal()" class="btn-primary text-xs"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add Peer</button>
+    </div>
+    <div class="glass-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="text-xs text-neutral-500 border-b border-white/5">
+            <th class="text-left py-3 px-5 font-medium">Device</th><th class="text-left py-3 px-3 font-medium">IP Address</th><th class="text-left py-3 px-3 font-medium">Public Key</th><th class="text-left py-3 px-3 font-medium">Traffic</th><th class="text-left py-3 px-3 font-medium">Last Seen</th><th class="text-left py-3 px-3 font-medium">Status</th><th class="text-right py-3 px-5 font-medium">Actions</th>
+          </tr></thead>
+          <tbody id="peersTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FIREWALL PAGE ==================== -->
+  <div id="page-firewall" class="page p-6 space-y-6">
+    <div class="flex items-center justify-between">
+      <div><h3 class="text-sm font-medium">Firewall Rules</h3><p class="text-xs text-neutral-500 mt-0.5">Control what traffic is allowed through your network</p></div>
+      <button onclick="addCustomRule()" class="btn-primary text-xs"><i data-lucide="plus" class="w-3.5 h-3.5"></i>Add Rule</button>
+    </div>
+
+    <!-- Content Categories -->
+    <div class="glass-card p-5">
+      <h4 class="text-sm font-medium mb-1">Content Category Blocking</h4>
+      <p class="text-xs text-neutral-500 mb-5">Block entire categories of content at the DNS level</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="categoryToggles"></div>
+    </div>
+
+    <!-- Custom Rules -->
+    <div class="glass-card overflow-hidden">
+      <div class="flex items-center justify-between p-5 border-b border-white/5">
+        <div><h4 class="text-sm font-medium">Custom Rules</h4><p class="text-xs text-neutral-500 mt-0.5">Block specific domains, IPs, or patterns</p></div>
+        <span class="text-xs text-neutral-500 font-mono" id="ruleCount">0 rules</span>
+      </div>
+      <div id="customRules" class="divide-y divide-white/[0.03]"></div>
+      <div id="noRules" class="p-10 text-center">
+        <i data-lucide="shield-off" class="w-10 h-10 text-neutral-700 mx-auto mb-3"></i>
+        <p class="text-sm text-neutral-500">No custom rules yet</p>
+        <p class="text-xs text-neutral-600 mt-1">Click "Add Rule" to create one</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DNS PAGE ==================== -->
+  <div id="page-dns" class="page p-6 space-y-6">
+    <div><h3 class="text-sm font-medium">DNS Filtering</h3><p class="text-xs text-neutral-500 mt-0.5">Configure how DNS queries are handled</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card p-5">
+        <h4 class="text-sm font-medium mb-4">DNS Server</h4>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-white/5 cursor-pointer hover:border-blue-500/30 transition-colors has-[:checked]:border-blue-500/40 has-[:checked]:bg-blue-500/5">
+            <input type="radio" name="dns" value="maliknode" checked class="accent-blue-500">
+            <div class="flex-1"><div class="text-sm font-medium">MalikNode DNS</div><div class="text-xs text-neutral-500">Block ads, trackers, malware automatically</div></div>
+            <span class="badge badge-blue">Recommended</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-white/5 cursor-pointer hover:border-white/10 transition-colors has-[:checked]:border-blue-500/40 has-[:checked]:bg-blue-500/5">
+            <input type="radio" name="dns" value="cloudflare" class="accent-blue-500">
+            <div class="flex-1"><div class="text-sm font-medium">Cloudflare (1.1.1.1)</div><div class="text-xs text-neutral-500">Fast, privacy-focused DNS</div></div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-white/5 cursor-pointer hover:border-white/10 transition-colors has-[:checked]:border-blue-500/40 has-[:checked]:bg-blue-500/5">
+            <input type="radio" name="dns" value="google" class="accent-blue-500">
+            <div class="flex-1"><div class="text-sm font-medium">Google (8.8.8.8)</div><div class="text-xs text-neutral-500">Reliable, widely available</div></div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-white/5 cursor-pointer hover:border-white/10 transition-colors has-[:checked]:border-blue-500/40 has-[:checked]:bg-blue-500/5">
+            <input type="radio" name="dns" value="custom" class="accent-blue-500">
+            <div class="flex-1"><div class="text-sm font-medium">Custom</div><div class="text-xs text-neutral-500">Use your own DNS server</div></div>
+          </label>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <h4 class="text-sm font-medium mb-4">DNS Query Log</h4>
+        <div class="space-y-2 max-h-80 overflow-y-auto" id="dnsLog"></div>
+      </div>
+    </div>
+    <div class="glass-card p-5">
+      <h4 class="text-sm font-medium mb-1">Block Lists</h4>
+      <p class="text-xs text-neutral-500 mb-4">Subscribe to community-maintained block lists</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="blockLists"></div>
+    </div>
+  </div>
+
+  <!-- ==================== CONFIG PAGE ==================== -->
+  <div id="page-config" class="page p-6 space-y-6">
+    <div><h3 class="text-sm font-medium">Configuration</h3><p class="text-xs text-neutral-500 mt-0.5">View and manage your WireGuard configuration</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-sm font-medium">Server Config</h4>
+          <div class="flex gap-2">
+            <button onclick="copyServerConfig()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"><i data-lucide="copy" class="w-3 h-3"></i>Copy</button>
+            <button onclick="downloadServerConfig()" class="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i>Download</button>
+          </div>
+        </div>
+        <pre id="serverConfig" class="text-[11px] text-neutral-400 font-mono leading-relaxed bg-black/30 rounded-xl p-4 overflow-x-auto whitespace-pre max-h-96 overflow-y-auto"></pre>
+      </div>
+      <div class="glass-card p-5 flex flex-col items-center">
+        <h4 class="text-sm font-medium mb-4 self-start">QR Code (Server)</h4>
+        <canvas id="serverQR" width="220" height="220" class="rounded-xl bg-white p-3 mb-4"></canvas>
+        <p class="text-xs text-neutral-500 text-center">Scan with WireGuard app to import this configuration</p>
+        <button onclick="downloadServerQR()" class="btn-secondary text-xs mt-4"><i data-lucide="download" class="w-3.5 h-3.5"></i>Download QR Image</button>
+      </div>
+    </div>
+    <div class="glass-card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h4 class="text-sm font-medium">Interface Information</h4>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-black/20 rounded-xl p-4"><div class="text-[10px] text-neutral-600 uppercase tracking-wider mb-1">Interface</div><div class="text-sm font-mono text-neutral-300">wg0</div></div>
+        <div class="bg-black/20 rounded-xl p-4"><div class="text-[10px] text-neutral-600 uppercase tracking-wider mb-1">Private Key</div><div class="text-sm font-mono text-neutral-300 truncate">aB3cD4eF5gH6iJ7kL8mN9...</div></div>
+        <div class="bg-black/20 rounded-xl p-4"><div class="text-[10px] text-neutral-600 uppercase tracking-wider mb-1">Listen Port</div><div class="text-sm font-mono text-neutral-300">51820</div></div>
+        <div class="bg-black/20 rounded-xl p-4"><div class="text-[10px] text-neutral-600 uppercase tracking-wider mb-1">Address</div><div class="text-sm font-mono text-neutral-300">10.0.0.1/24</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS PAGE ==================== -->
+  <div id="page-settings" class="page p-6 space-y-6">
+    <div><h3 class="text-sm font-medium">Settings</h3><p class="text-xs text-neutral-500 mt-0.5">Account and network settings</p></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-card p-5">
+        <h4 class="text-sm font-medium mb-4">Account</h4>
+        <div class="space-y-4">
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">Email</label><input class="input" value="musab@maliknode.app" disabled></div>
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">Display Name</label><input class="input" value="Alex" id="displayName"></div>
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">Plan</label><div class="flex items-center gap-3"><span class="badge badge-blue">Pro Plan</span><button class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Upgrade</button></div></div>
+          <button onclick="showToast('Settings saved!')" class="btn-primary text-xs"><i data-lucide="save" class="w-3.5 h-3.5"></i>Save Changes</button>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <h4 class="text-sm font-medium mb-4">Network Settings</h4>
+        <div class="space-y-4">
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">VPN CIDR</label><input class="input font-mono text-xs" value="10.0.0.0/24" id="vpnCidr"></div>
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">Listen Port</label><input class="input font-mono text-xs" value="51820" id="listenPort"></div>
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">MTU</label><input class="input font-mono text-xs" value="1420" id="mtu"></div>
+          <div class="flex items-center justify-between"><div><div class="text-sm">Persistent Keepalive</div><div class="text-xs text-neutral-500">Keep NAT mappings alive</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <button onclick="showToast('Network settings updated!')" class="btn-primary text-xs"><i data-lucide="save" class="w-3.5 h-3.5"></i>Save Changes</button>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <h4 class="text-sm font-medium mb-4">API Access</h4>
+        <div class="space-y-4">
+          <div><label class="text-xs text-neutral-500 mb-1.5 block">API Key</label><div class="flex gap-2"><input class="input font-mono text-xs" value="pbr_sk_****************************a4f2" id="apiKey" readonly><button onclick="showToast('API key copied!')" class="btn-secondary text-xs !px-3"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button></div></div>
+          <div class="flex items-center justify-between"><div><div class="text-sm">API Access</div><div class="text-xs text-neutral-500">Allow programmatic access</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <button onclick="showToast('New API key generated!')" class="btn-secondary text-xs"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>Regenerate Key</button>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <h4 class="text-sm font-medium mb-4 text-red-400">Danger Zone</h4>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-3 rounded-xl border border-red-500/10">
+            <div><div class="text-sm">Reset All Peers</div><div class="text-xs text-neutral-500">Remove all peer configurations</div></div>
+            <button onclick="if(confirm('Remove all peers?'))showToast('All peers removed','error')" class="btn-danger text-xs !py-2 !px-3">Reset</button>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl border border-red-500/10">
+            <div><div class="text-sm">Delete Account</div><div class="text-xs text-neutral-500">Permanently delete your account</div></div>
+            <button onclick="showToast('Contact support to delete','error')" class="btn-danger text-xs !py-2 !px-3">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+const peers = [
+  {id:1,name:'MacBook-Pro',icon:'laptop',color:'blue',ip:'10.0.0.2',pubKey:'aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5=',dl:'45.2',ul:'12.1',lastSeen:'Now',status:'online',mesh:true},
+  {id:2,name:'iPhone-15',icon:'smartphone',color:'green',ip:'10.0.0.3',pubKey:'zY9xW8vU7tS6rQ5pO4nM3lK2jI1hG0fD9eC8bA7=',dl:'28.4',ul:'8.3',lastSeen:'Now',status:'online',mesh:true},
+  {id:3,name:'Home-Server',icon:'server',color:'purple',ip:'10.0.0.4',pubKey:'fE6dC5bA4zY9xW8vU7tS6rQ5pO4nM3lK2jI1hG0=',dl:'52.1',ul:'18.9',lastSeen:'Now',status:'online',mesh:true},
+  {id:4,name:'iPad-Air',icon:'tablet',color:'orange',ip:'10.0.0.5',pubKey:'pO4nM3lK2jI1hG0fD9eC8bA7zY9xW8vU7tS6rQ5qR=',dl:'0',ul:'0',lastSeen:'2m ago',status:'connecting',mesh:true},
+  {id:5,name:'Windows-Desktop',icon:'monitor',color:'cyan',ip:'10.0.0.6',pubKey:'hG0fD9eC8bA7zY9xW8vU7tS6rQ5pO4nM3lK2jI1=',dl:'0',ul:'0',lastSeen:'3h ago',status:'offline',mesh:false},
+  {id:6,name:'Android-Phone',icon:'smartphone',color:'pink',ip:'10.0.0.7',pubKey:'tS6rQ5pO4nM3lK2jI1hG0fD9eC8bA7zY9xW8vU7qR=',dl:'0',ul:'0',lastSeen:'1d ago',status:'offline',mesh:false}
+];
+
+const categories = [
+  {id:'adult',name:'Adult Content',icon:'eye-off',color:'red',enabled:false,desc:'Block pornographic content'},
+  {id:'ads',name:'Ads & Trackers',icon:'block',color:'orange',enabled:true,desc:'Block advertising and tracking'},
+  {id:'malware',name:'Malware',icon:'bug',color:'red',enabled:true,desc:'Block known malware domains'},
+  {id:'social',name:'Social Media',icon:'message-circle',color:'blue',enabled:false,desc:'Block social media platforms'},
+  {id:'gambling',name:'Gambling',icon:'dice-5',color:'yellow',enabled:false,desc:'Block gambling websites'},
+  {id:'gaming',name:'Gaming',icon:'gamepad-2',color:'green',enabled:false,desc:'Block gaming services'},
+  {id:'streaming',name:'Streaming',icon:'play',color:'purple',enabled:false,desc:'Block video streaming'},
+  {id:'torrent',name:'Torrenting',icon:'download-cloud',color:'cyan',enabled:false,desc:'Block torrent trackers'},
+  {id:'crypto',name:'Crypto Mining',icon:'cpu',color:'orange',enabled:false,desc:'Block mining pool connections'}
+];
+
+const blockLists = [
+  {name:'StevenBlack Unified',desc:'Combined adware/malware list',count:'~70K domains',enabled:true},
+  {name:'OISD Full',desc:'Comprehensive blocklist',count:'~1.2M domains',enabled:false},
+  {name:'Hagezi DNS Blocklist',desc:'Multi-purpose DNS filter',count:'~800K domains',enabled:true},
+  {name:'Dandelion Sprout',desc:'Anti-malware + phishing',count:'~50K domains',enabled:false}
+];
+
+let customRules = [];
+let nextPeerIP = 8;
+
+const serverConfigStr = `[Interface]
+PrivateKey = aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5=
+Address = 10.0.0.1/24
+ListenPort = 51820
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+# Peer: MacBook-Pro
+[Peer]
+PublicKey = aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5=
+AllowedIPs = 10.0.0.2/32
+
+# Peer: iPhone-15
+[Peer]
+PublicKey = zY9xW8vU7tS6rQ5pO4nM3lK2jI1hG0fD9eC8bA7=
+AllowedIPs = 10.0.0.3/32
+
+# Peer: Home-Server
+[Peer]
+PublicKey = fE6dC5bA4zY9xW8vU7tS6rQ5pO4nM3lK2jI1hG0fD9eC8bA7=
+AllowedIPs = 10.0.0.4/32
+
+# Peer: iPad-Air
+[Peer]
+PublicKey = pO4nM3lK2jI1hG0fD9eC8bA7zY9xW8vU7tS6rQ5qR=
+AllowedIPs = 10.0.0.5/32`;
+
+// ============ INIT ============
+lucide.createIcons();
+
+document.getElementById('serverConfig').textContent = serverConfigStr;
+drawQR('serverQR', 'maliknode-server-config-10.0.0.1');
+renderPeersTable();
+renderCategories();
+renderBlockLists();
+renderDNSLog();
+renderMeshTopology();
+renderMeshTable();
+
+// ============ NAVIGATION ============
+function navigate(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('pageTitle').textContent = el ? el.textContent.trim() : page;
+  document.getElementById('sidebar').classList.remove('open');
+  if (page === 'mesh') { setTimeout(renderMeshTopology, 100); }
+  if (page === 'config') { setTimeout(() => drawQR('serverQR', 'maliknode-server-config-10.0.0.1'), 100); }
+}
+
+// ============ TOAST ============
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.className = 'toast' + (type === 'error' ? ' error' : '');
+  t.querySelector('i').setAttribute('data-lucide', type === 'error' ? 'alert-circle' : 'check-circle');
+  document.getElementById('toast-msg').textContent = msg;
+  lucide.createIcons();
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============ MODAL ============
+function openModal() {
+  document.getElementById('addPeerModal').classList.add('open');
+  document.getElementById('modalStep1').style.display = 'block';
+  document.getElementById('modalStep2').style.display = 'none';
+  document.getElementById('peerName').value = '';
+  document.getElementById('peerIPs').value = `10.0.0.${nextPeerIP}/32`;
+  document.getElementById('peerDNS').value = '1.1.1.1';
+}
+function closeModal() { document.getElementById('addPeerModal').classList.remove('open'); }
+function resetModal() {
+  document.getElementById('modalStep1').style.display = 'block';
+  document.getElementById('modalStep2').style.display = 'none';
+}
+
+let generatedConfig = '';
+function generatePeerConfig() {
+  const name = document.getElementById('peerName').value.trim() || 'New-Peer';
+  const ip = document.getElementById('peerIPs').value.trim() || `10.0.0.${nextPeerIP}/32`;
+  const dns = document.getElementById('peerDNS').value.trim() || '1.1.1.1';
+  const privKey = genKey();
+  const pubKey = genKey();
+  const serverPub = 'aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5=';
+
+  generatedConfig = `[Interface]
+PrivateKey = ${privKey}
+Address = ${ip}
+DNS = ${dns}
+
+[Peer]
+PublicKey = ${serverPub}
+Endpoint = vpn.maliknode.app:51820
+AllowedIPs = 10.0.0.0/24
+PersistentKeepalive = 25`;
+
+  document.getElementById('configPreview').textContent = generatedConfig;
+  drawQR('qrCanvas', `maliknode-peer-${name}-${ip}`);
+  document.getElementById('modalStep1').style.display = 'none';
+  document.getElementById('modalStep2').style.display = 'block';
+
+  // Add peer
+  const icons = ['laptop','smartphone','tablet','monitor','server'];
+  const colors = ['blue','green','purple','orange','cyan','pink'];
+  peers.push({
+    id: peers.length + 1, name, icon: icons[Math.floor(Math.random()*icons.length)],
+    color: colors[Math.floor(Math.random()*colors.length)], ip: ip.split('/')[0],
+    pubKey, dl: '0', ul: '0', lastSeen: 'Just now', status: 'connecting', mesh: true
+  });
+  nextPeerIP++;
+  document.getElementById('peerCount').textContent = peers.length;
+  renderPeersTable();
+  renderMeshTopology();
+  renderMeshTable();
+  lucide.createIcons();
+}
+
+function copyConfig() {
+  navigator.clipboard.writeText(generatedConfig).then(() => showToast('Config copied to clipboard!'));
+}
+function downloadConfig() {
+  const blob = new Blob([generatedConfig], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'maliknode-peer.conf';
+  a.click();
+  showToast('Config file downloaded!');
+}
+function copyServerConfig() {
+  navigator.clipboard.writeText(serverConfigStr).then(() => showToast('Server config copied!'));
+}
+function downloadServerConfig() {
+  const blob = new Blob([serverConfigStr], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'maliknode-server.conf';
+  a.click();
+  showToast('Server config downloaded!');
+}
+function downloadServerQR() {
+  const canvas = document.getElementById('serverQR');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL();
+  a.download = 'maliknode-qr.png';
+  a.click();
+  showToast('QR image downloaded!');
+}
+
+// ============ QR CODE DRAWING ============
+function drawQR(canvasId, data) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+
+  const modules = 25;
+  const modSize = (size - 24) / modules;
+  const offset = 12;
+
+  // Seed from data string
+  let seed = 0;
+  for (let i = 0; i < data.length; i++) seed = ((seed << 5) - seed + data.charCodeAt(i)) | 0;
+  const rand = () => { seed = (seed * 16807 + 0) % 2147483647; return (seed & 1); };
+
+  ctx.fillStyle = '#000000';
+
+  // Corner squares (finder patterns)
+  function drawFinder(x, y) {
+    const s = modSize;
+    ctx.fillRect(x, y, 7*s, 7*s);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x+s, y+s, 5*s, 5*s);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x+2*s, y+2*s, 3*s, 3*s);
+  }
+  drawFinder(offset, offset);
+  ctx.fillStyle = '#000000';
+  drawFinder(offset + (modules-7)*modSize, offset);
+  ctx.fillStyle = '#000000';
+  drawFinder(offset, offset + (modules-7)*modSize);
+
+  // Timing patterns
+  for (let i = 8; i < modules - 8; i++) {
+    if (i % 2 === 0) {
+      ctx.fillRect(offset + i*modSize, offset + 6*modSize, modSize, modSize);
+      ctx.fillRect(offset + 6*modSize, offset + i*modSize, modSize, modSize);
+    }
+  }
+
+  // Random data modules
+  for (let r = 0; r < modules; r++) {
+    for (let c = 0; c < modules; c++) {
+      // Skip finder patterns and timing
+      if ((r < 9 && c < 9) || (r < 9 && c > modules-9) || (r > modules-9 && c < 9)) continue;
+      if (r === 6 || c === 6) continue;
+      if (rand()) {
+        ctx.fillRect(offset + c*modSize, offset + r*modSize, modSize-0.5, modSize-0.5);
+      }
+    }
+  }
+}
+
+function genKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let key = '';
+  for (let i = 0; i < 44; i++) key += chars[Math.floor(Math.random()*chars.length)];
+  return key + '=';
+}
+
+// ============ PEERS TABLE ============
+function renderPeersTable() {
+  const tb = document.getElementById('peersTable');
+  tb.innerHTML = peers.map(p => `
+    <tr class="peer-row border-b border-white/[0.03]">
+      <td class="py-3 px-5"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-${p.color}-500/10 flex items-center justify-center"><i data-lucide="${p.icon}" class="w-4 h-4 text-${p.color}-400"></i></div><div><div class="text-sm font-medium">${p.name}</div>${p.mesh?'<span class="text-[10px] text-blue-400">Mesh</span>':''}</div></div></td>
+      <td class="py-3 px-3 font-mono text-xs text-neutral-400">${p.ip}</td>
+      <td class="py-3 px-3 font-mono text-[10px] text-neutral-500 max-w-[120px] truncate">${p.pubKey.substring(0,20)}...</td>
+      <td class="py-3 px-3 font-mono text-xs text-neutral-400">${p.status==='online'?`↓ ${p.dl} ↑ ${p.ul}`:'—'}</td>
+      <td class="py-3 px-3 text-xs text-neutral-500">${p.lastSeen}</td>
+      <td class="py-3 px-3"><span class="badge badge-${p.status==='online'?'green':p.status==='connecting'?'yellow':'red'}">${p.status}</span></td>
+      <td class="py-3 px-5 text-right"><div class="flex items-center justify-end gap-1">
+        <button onclick="showToast('QR code shown!')" class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" title="QR Code"><i data-lucide="qr-code" class="w-3.5 h-3.5 text-neutral-400"></i></button>
+        <button onclick="removePeer(${p.id})" class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center hover:bg-red-500/10 transition-colors" title="Remove"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-neutral-400 hover:text-red-400"></i></button>
+      </div></td>
+    </tr>
+  `).join('');
+  lucide.createIcons();
+}
+
+function removePeer(id) {
+  const idx = peers.findIndex(p => p.id === id);
+  if (idx > -1) { peers.splice(idx, 1); renderPeersTable(); renderMeshTopology(); renderMeshTable(); document.getElementById('peerCount').textContent = peers.length; showToast('Peer removed', 'error'); }
+}
+
+// ============ CATEGORIES ============
+function renderCategories() {
+  const c = document.getElementById('categoryToggles');
+  c.innerHTML = categories.map(cat => `
+    <div class="flex items-center gap-3 p-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+      <div class="w-9 h-9 rounded-xl bg-${cat.color}-500/10 flex items-center justify-center shrink-0"><i data-lucide="${cat.icon}" class="w-4 h-4 text-${cat.color}-400"></i></div>
+      <div class="flex-1 min-w-0"><div class="text-sm font-medium">${cat.name}</div><div class="text-[11px] text-neutral-500 truncate">${cat.desc}</div></div>
+      <div class="toggle ${cat.enabled?'on':''}" onclick="toggleCategory('${cat.id}',this)"></div>
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+function toggleCategory(id, el) {
+  el.classList.toggle('on');
+  const cat = categories.find(c => c.id === id);
+  if (cat) cat.enabled = el.classList.contains('on');
+  showToast(`${cat.name} ${cat.enabled ? 'blocked' : 'unblocked'}`);
+}
+
+// ============ BLOCK LISTS ============
+function renderBlockLists() {
+  const c = document.getElementById('blockLists');
+  c.innerHTML = blockLists.map((bl, i) => `
+    <div class="flex items-center gap-3 p-3 rounded-xl border border-white/5">
+      <div class="toggle ${bl.enabled?'on':''}" onclick="toggleBlockList(${i},this)"></div>
+      <div class="flex-1"><div class="text-sm font-medium">${bl.name}</div><div class="text-[11px] text-neutral-500">${bl.desc} · ${bl.count}</div></div>
+    </div>
+  `).join('');
+}
+
+function toggleBlockList(i, el) {
+  el.classList.toggle('on');
+  blockLists[i].enabled = el.classList.contains('on');
+  showToast(`${blockLists[i].name} ${blockLists[i].enabled ? 'enabled' : 'disabled'}`);
+}
+
+// ============ CUSTOM RULES ============
+function addCustomRule() {
+  const type = prompt('Rule type: domain, ip, or pattern?') || 'domain';
+  const value = prompt(`Enter ${type} to block:`) || 'example.com';
+  customRules.push({ type, value, enabled: true, id: Date.now() });
+  renderCustomRules();
+  showToast(`Rule added: ${value}`);
+}
+
+function renderCustomRules() {
+  const c = document.getElementById('customRules');
+  const nr = document.getElementById('noRules');
+  document.getElementById('ruleCount').textContent = customRules.length + ' rules';
+  if (customRules.length === 0) { c.innerHTML = ''; nr.style.display = 'block'; return; }
+  nr.style.display = 'none';
+  c.innerHTML = customRules.map(r => `
+    <div class="rule-row flex items-center gap-4 p-4 px-5">
+      <div class="toggle ${r.enabled?'on':''}" onclick="toggleRule(${r.id},this)"></div>
+      <span class="badge badge-${r.type==='domain'?'blue':r.type==='ip'?'purple':'orange'}">${r.type}</span>
+      <span class="text-sm font-mono text-neutral-300 flex-1">${r.value}</span>
+      <button onclick="removeRule(${r.id})" class="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center hover:bg-red-500/10 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-neutral-500 hover:text-red-400"></i></button>
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+function toggleRule(id, el) { el.classList.toggle('on'); const r = customRules.find(x=>x.id===id); if(r) r.enabled=el.classList.contains('on'); }
+function removeRule(id) { customRules = customRules.filter(x=>x.id!==id); renderCustomRules(); showToast('Rule removed','error'); }
+
+// ============ DNS LOG ============
+function renderDNSLog() {
+  const domains = ['google.com','reddit.com','github.com','discord.com','youtube.com','api.maliknode.com','fonts.googleapis.com','cdn.jsdelivr.net'];
+  const types = ['A','AAAA','CNAME'];
+  const c = document.getElementById('dnsLog');
+  c.innerHTML = domains.map((d, i) => {
+    const blocked = Math.random() > 0.85;
+    const t = types[Math.floor(Math.random()*3)];
+    const ip = blocked ? 'BLOCKED' : `${10+Math.floor(Math.random()*240)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}`;
+    return `<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.02] transition-colors">
+      <span class="text-[10px] text-neutral-600 font-mono w-12">${new Date(Date.now()-i*12000).toLocaleTimeString()}</span>
+      <span class="text-[10px] font-mono ${blocked?'text-red-400':'text-neutral-500'} w-8">${t}</span>
+      <span class="text-xs font-mono flex-1 truncate ${blocked?'text-red-400/70 line-through':'text-neutral-300'}">${d}</span>
+      <span class="text-[10px] font-mono ${blocked?'text-red-400':'text-neutral-500'}">${ip}</span>
+      ${blocked?'<i data-lucide="shield-off" class="w-3 h-3 text-red-400 shrink-0"></i>':''}
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+// ============ MESH TOPOLOGY ============
+function renderMeshTopology() {
+  const svg = document.getElementById('meshSvg');
+  if (!svg) return;
+  const onlinePeers = peers.filter(p => p.status !== 'offline');
+  const allNodes = [{ name: 'VPN Gateway', ip: '10.0.0.1', status: 'online', color: 'purple', icon: 'shield' }, ...peers];
+
+  const cx = 400, cy = 225, radius = 170;
+  const positions = [];
+  positions.push({ x: cx, y: cy }); // Gateway center
+  peers.forEach((p, i) => {
+    const angle = (i / peers.length) * Math.PI * 2 - Math.PI / 2;
+    positions.push({ x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) });
+  });
+
+  let svgContent = '<defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+
+  // Draw mesh lines between online mesh peers
+  const meshPeers = peers.filter(p => p.mesh && p.status === 'online');
+  for (let i = 0; i < meshPeers.length; i++) {
+    for (let j = i + 1; j < meshPeers.length; j++) {
+      const a = peers.indexOf(meshPeers[i]) + 1;
+      const b = peers.indexOf(meshPeers[j]) + 1;
+      const isP2P = Math.random() > 0.4;
+      svgContent += `<line x1="${positions[a].x}" y1="${positions[a].y}" x2="${positions[b].x}" y2="${positions[b].y}" class="mesh-line" stroke="${isP2P ? 'rgba(34,197,94,0.2)' : 'rgba(168,85,247,0.15)'}" stroke-width="1"/>`;
+    }
+  }
+
+  // Lines from gateway to all peers
+  peers.forEach((p, i) => {
+    const col = p.status === 'online' ? 'rgba(168,85,247,0.25)' : p.status === 'connecting' ? 'rgba(234,179,8,0.15)' : 'rgba(255,255,255,0.04)';
+    svgContent += `<line x1="${positions[0].x}" y1="${positions[0].y}" x2="${positions[i+1].x}" y2="${positions[i+1].y}" stroke="${col}" stroke-width="1" ${p.status==='online'?'class="mesh-line"':''}/>`;
+  });
+
+  // Draw nodes
+  allNodes.forEach((n, i) => {
+    const pos = positions[i];
+    const isCenter = i === 0;
+    const r = isCenter ? 28 : 22;
+    const statusColor = n.status === 'online' ? '#22c55e' : n.status === 'connecting' ? '#eab308' : '#525252';
+    const fillColor = isCenter ? 'rgba(168,85,247,0.15)' : `rgba(${n.color==='blue'?'59,130,246':n.color==='green'?'34,197,94':n.color==='purple'?'168,85,247':n.color==='orange'?'249,115,22':n.color==='cyan'?'6,182,212':'236,72,153'},0.1)`;
+
+    // Glow
+    if (n.status === 'online') {
+      svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="${r+8}" fill="none" stroke="${statusColor}" stroke-width="1" opacity="0.2"><animate attributeName="r" values="${r+6};${r+14};${r+6}" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite"/></circle>`;
+    }
+
+    // Node circle
+    svgContent += `<circle cx="${pos.x}" cy="${pos.y}" r="${r}" fill="${fillColor}" stroke="${isCenter?'rgba(168,85,247,0.4)':'rgba(255,255,255,0.1)'}" stroke-width="1.5" class="mesh-node"/>`;
+
+    // Icon text (simplified)
+    svgContent += `<text x="${pos.x}" y="${pos.y+1}" text-anchor="middle" dominant-baseline="central" fill="${isCenter?'#3b82f6':'rgba(255,255,255,0.6)'}" font-size="${isCenter?'14':'11'}" font-family="Inter">${isCenter?'⬡':'●'}</text>`;
+
+    // Status dot
+    svgContent += `<circle cx="${pos.x+r*0.65}" cy="${pos.y-r*0.65}" r="4" fill="${statusColor}" stroke="#050505" stroke-width="2"/>`;
+
+    // Label
+    svgContent += `<text x="${pos.x}" y="${pos.y+r+16}" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="11" font-family="Inter" font-weight="500">${n.name}</text>`;
+    svgContent += `<text x="${pos.x}" y="${pos.y+r+30}" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9" font-family="JetBrains Mono">${n.ip}</text>`;
+  });
+
+  svg.innerHTML = svgContent;
+}
+
+function renderMeshTable() {
+  const tb = document.getElementById('meshTable');
+  if (!tb) return;
+  const meshPeers = peers.filter(p => p.mesh && p.status === 'online');
+  let rows = [];
+  // Gateway to each peer
+  meshPeers.forEach(p => {
+    rows.push({ from: 'Gateway', to: p.name, type: 'Hub', latency: (1+Math.random()*4).toFixed(1), status: 'active' });
+  });
+  // Peer to peer
+  for (let i = 0; i < meshPeers.length; i++) {
+    for (let j = i+1; j < meshPeers.length; j++) {
+      rows.push({ from: meshPeers[i].name, to: meshPeers[j].name, type: Math.random()>0.4?'P2P':'Relay', latency: (2+Math.random()*8).toFixed(1), status: 'active' });
+    }
+  }
+  tb.innerHTML = rows.map(r => `
+    <tr class="border-b border-white/[0.03]">
+      <td class="py-2.5 px-3 text-xs font-mono text-neutral-300">${r.from}</td>
+      <td class="py-2.5 px-3 text-xs font-mono text-neutral-300">${r.to}</td>
+      <td class="py-2.5 px-3"><span class="badge ${r.type==='P2P'?'badge-green':'badge-blue'}">${r.type}</span></td>
+      <td class="py-2.5 px-3 text-xs font-mono text-neutral-400">${r.latency}ms</td>
+      <td class="py-2.5 px-3"><span class="badge badge-green">Active</span></td>
+    </tr>
+  `).join('');
+}
+
+// ============ TRAFFIC CHART ============
+const chartCanvas = document.getElementById('trafficChart');
+const chartCtx = chartCanvas.getContext('2d');
+let dlData = Array(60).fill(0);
+let ulData = Array(60).fill(0);
+
+function resizeChart() {
+  chartCanvas.width = chartCanvas.parentElement.clientWidth - 40;
+  chartCanvas.height = 180;
+}
+resizeChart();
+window.addEventListener('resize', resizeChart);
+
+function updateTraffic() {
+  dlData.push(80 + Math.random() * 80);
+  dlData.shift();
+  ulData.push(20 + Math.random() * 40);
+  ulData.shift();
+
+  // Update header speed
+  const dl = dlData[dlData.length-1].toFixed(1);
+  const ul = ulData[ulData.length-1].toFixed(1);
+  document.getElementById('headerSpeed').textContent = `↓ ${dl} ↑ ${ul} Mbps`;
+
+  drawChart();
+  requestAnimationFrame(() => setTimeout(updateTraffic, 1000));
+}
+
+function drawChart() {
+  const w = chartCanvas.width, h = chartCanvas.height;
+  const ctx = chartCtx;
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const y = (h / 4) * i;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  const maxVal = 200;
+
+  function drawLine(data, color, fillColor) {
+    ctx.beginPath();
+    data.forEach((v, i) => {
+      const x = (i / (data.length - 1)) * w;
+      const y = h - (v / maxVal) * h;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Fill
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, fillColor);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  drawLine(dlData, '#3b82f6', 'rgba(59,130,246,0.08)');
+  drawLine(ulData, '#3b82f6', 'rgba(59,130,246,0.08)');
+}
+
+updateTraffic();
+</script>
+</body>
+</html>
