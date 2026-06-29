@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MalikNode</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+lucide.createIcons();
+
+// ===== PARTICLES =====
+const particlesEl = document.getElementById('particles');
+for (let i = 0; i < 40; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.animationDuration = (8 + Math.random() * 15) + 's';
+  p.style.animationDelay = (Math.random() * 10) + 's';
+  p.style.width = (1 + Math.random() * 2) + 'px';
+  p.style.height = p.style.width;
+  p.style.opacity = 0.1 + Math.random() * 0.4;
+  if (Math.random() > 0.5) p.style.background = 'rgba(59,130,246,0.4)';
+  particlesEl.appendChild(p);
+}
+
+function setRipple(e, btn) {
+  const rect = btn.getBoundingClientRect();
+  btn.style.setProperty('--x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+  btn.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+}
+
+function toggleCheck(el) { el.classList.toggle('checked'); }
+
+function togglePassword(id, btn) {
+  const input = document.getElementById(id);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
+  lucide.createIcons();
+}
+
+function checkStrength(val) {
+  const fill = document.getElementById('strengthFill');
+  const text = document.getElementById('strengthText');
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (val.length >= 12) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  const levels = [
+    { w: '0%', c: 'transparent', t: '', l: '' },
+    { w: '20%', c: '#ef4444', t: 'Weak', l: 'Add uppercase, numbers, symbols' },
+    { w: '40%', c: '#f97316', t: 'Fair', l: 'Try making it longer' },
+    { w: '60%', c: '#eab308', t: 'Good', l: 'Almost there' },
+    { w: '80%', c: '#22c55e', t: 'Strong', l: 'Looking good' },
+    { w: '100%', c: '#22c55e', t: 'Excellent', l: 'Very secure' }
+  ];
+  const level = levels[Math.min(score, 5)];
+  fill.style.width = level.w;
+  fill.style.background = level.c;
+  text.children[0].textContent = level.t;
+  text.children[0].style.color = level.c;
+  text.children[1].textContent = level.l;
+}
+
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.querySelector('i').setAttribute('data-lucide', type === 'error' ? 'alert-circle' : 'check-circle');
+  document.getElementById('toast-msg').textContent = msg;
+  t.style.borderColor = type === 'error' ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.25)';
+  t.style.background = type === 'error' ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)';
+  t.style.color = type === 'error' ? '#ef4444' : '#22c55e';
+  lucide.createIcons();
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.style.transform = 'translateX(-50%) translateY(100px)';
+    t.style.opacity = '0';
+  }, 3000);
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPassword').value;
+
+  if (!document.getElementById('termsCheck').classList.contains('checked')) {
+    showToast('Please agree to the Terms of Service', 'error');
+    return;
+  }
+  if (pass.length < 8) {
+    showToast('Password must be at least 8 characters', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('signupBtn');
+  const btnText = document.getElementById('signupBtnText');
+  const spinner = document.getElementById('signupSpinner');
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  spinner.classList.remove('hidden');
+
+  try {
+    const res = await fetch("https://api.maliknode.app/api/auth/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      showToast(data.message);
+      setTimeout(() => {
+        window.location.href = `/verify?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&password=${encodeURIComponent(pass)}`;
+      }, 1000);
+    } else {
+      showToast(data.detail || "Failed to send verification code", "error");
+    }
+  } catch (err) {
+    showToast("Server connection error", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    spinner.classList.add('hidden');
+  }
+}
+</script>
+</body>
+</html>
