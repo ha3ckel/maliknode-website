@@ -3,1925 +3,1158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MALIKNODE DNS — Next-Gen Secure Private DNS Portal</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='%23E30613' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='rgba(227, 6, 19, 0.2)' stroke='%23E30613' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <title>MalikNode VPN — Hardened Zero-Config Private Networks</title>
+    <meta name="description" content="Instant, zero-config managed WireGuard VPN implementations with integrated AdGuard Home and Unbound recursive DNS for secure remote access.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='var(--color-primary-hex)' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='var(--color-primary-glow)' stroke='var(--color-primary-hex)' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        display: ['Oswald', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        brand: '#E30613',
-                        dark: '#050505',
-                        'dark-alt': '#0a0a0a',
+                        dark: '#030303',
+                        'dark-alt': '#09090b',
                     }
                 }
             }
         }
     </script>
     <style>
-        ::selection { background: #E30613; color: #fff; }
+        :root {
+            --color-primary: 59, 130, 246; /* Blue (#3b82f6) */
+            --color-primary-hex: #3b82f6;
+            --color-primary-glow: rgba(59, 130, 246, 0.15);
+            --gradient-start: #3b82f6;
+            --gradient-end: #6366f1;
+            --scrollbar-thumb: rgba(59, 130, 246, 0.4);
+        }
+        
+        body.theme-purple {
+            --color-primary: 168, 85, 247; /* Purple (#a855f7) */
+            --color-primary-hex: #a855f7;
+            --color-primary-glow: rgba(168, 85, 247, 0.15);
+            --gradient-start: #a855f7;
+            --gradient-end: #3b82f6;
+            --scrollbar-thumb: rgba(168, 85, 247, 0.4);
+        }
 
-        /* Scrollbar */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #030303; color: #fff; overflow-x: hidden; }
+
+        ::selection { background: var(--color-primary-hex); color: #fff; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #E30613; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
 
-        /* Smooth FAQ slide-down */
-        .faq-content {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease-out, padding-bottom 0.3s ease-out;
-            padding-bottom: 0;
-        }
-        .faq-content.open {
-            max-height: 300px;
-            opacity: 1;
-            padding-bottom: 1.25rem;
+        .dynamic-text-color { color: var(--color-primary-hex); }
+        .dynamic-bg-color { background-color: var(--color-primary-hex); }
+        .dynamic-border-color { border-color: var(--color-primary-hex); }
+
+        /* Grid background matching dns.html */
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
         }
 
-        /* Glass */
         .glass {
-            background: rgba(26, 26, 26, 0.6);
+            background: rgba(15, 15, 20, 0.7);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .glass-strong {
-            background: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+
+        .glass-glow {
+            box-shadow: 0 0 40px var(--color-primary-glow), inset 0 1px 1px rgba(255, 255, 255, 0.1);
         }
 
-        /* 3D Card */
-        .card-3d {
-            transform-style: preserve-3d;
-            perspective: 1000px;
-        }
-        .card-3d-inner {
-            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d;
-        }
-        .card-3d:hover .card-3d-inner {
-            transform: rotateY(5deg) rotateX(5deg) translateZ(20px);
+        .text-glow {
+            text-shadow: 0 0 20px var(--color-primary-glow);
         }
 
-        /* Glow effects */
-        .glow-red { box-shadow: 0 0 40px rgba(227, 6, 19, 0.3), 0 0 80px rgba(227, 6, 19, 0.1); }
-        .glow-red-sm { box-shadow: 0 0 20px rgba(227, 6, 19, 0.2); }
-        .text-glow { text-shadow: 0 0 40px rgba(227, 6, 19, 0.5); }
-
-        /* Gradient border */
-        .gradient-border {
-            position: relative;
-        }
-        .gradient-border::before {
+        .pulse-ring::after {
             content: '';
             position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            padding: 1px;
-            background: linear-gradient(135deg, #E30613, #3b82f6, #E30613);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0.5;
-            transition: opacity 0.4s;
-            pointer-events: none;
+            inset: -4px;
+            border-radius: 24px;
+            border: 2px solid var(--color-primary-hex);
+            animation: pulseRing 3s ease-out infinite;
         }
-        .gradient-border:hover::before { opacity: 1; }
 
-        /* Animated gradient */
+        @keyframes pulseRing {
+            0% { transform: scale(0.98); opacity: 0.8; }
+            100% { transform: scale(1.03); opacity: 0; }
+        }
+
+        /* Scroll reveal styling */
+        .reveal {
+            opacity: 0; transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* Feature Card styling from dns.html */
+        .feature-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 36px;
+            transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 24px;
+            background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--color-primary-glow), transparent 40%);
+            opacity: 0; transition: opacity 0.5s;
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover {
+            border-color: rgba(var(--color-primary), 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        /* OS Cards from dns.html */
+        .os-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 32px 24px;
+            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .os-card::after {
+            content: ''; position: absolute; inset: 0; border-radius: 20px;
+            background: linear-gradient(135deg, var(--color-primary-glow), transparent);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .os-card:hover::after { opacity: 1; }
+        .os-card:hover {
+            border-color: rgba(var(--color-primary), 0.3);
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        .os-card .os-icon { transition: transform 0.4s; }
+        .os-card:hover .os-icon { transform: scale(1.1); }
+
+        /* Pricing Card from dns.html */
+        .pricing-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 28px;
+            padding: 40px;
+            transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            position: relative;
+        }
+        .pricing-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+        .pricing-card.popular {
+            border-color: rgba(var(--color-primary), 0.4);
+            background: linear-gradient(180deg, var(--color-primary-glow) 0%, rgba(5,5,5,0) 60%);
+        }
+        .pricing-card.popular::before {
+            content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 2px;
+            background: linear-gradient(to right, transparent, var(--color-primary-hex), transparent);
+        }
+
+        /* Buttons from dns.html */
+        .btn-primary {
+            background: #fff; color: #000; font-weight: 500; font-size: 14px;
+            padding: 14px 32px; border-radius: 14px; border: none; cursor: pointer;
+            transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 35px rgba(255,255,255,0.15);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.05); color: #fff; font-weight: 500; font-size: 14px;
+            padding: 14px 32px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+            transform: scale(1.03);
+        }
+
+        /* Toast Green error popup style matching dns.html */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+            backdrop-filter: blur(20px); border-radius: 14px; padding: 14px 24px;
+            display: flex; align-items: center; gap: 10px; z-index: 9999;
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+            font-size: 14px; color: #22c55e;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Animated Gradient Text */
         @keyframes gradientShift {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-        .animated-gradient {
-            background: linear-gradient(135deg, #E30613, #ff6b35, #3b82f6, #E30613);
-            background-size: 300% 300%;
-            animation: gradientShift 6s ease infinite;
+        .animated-gradient-text {
+            background: linear-gradient(to right, var(--gradient-start), var(--gradient-end), var(--gradient-start));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease infinite;
         }
 
-        /* Pulse ring */
-        @keyframes pulseRing {
+        /* Server Map Dots */
+        .server-dot {
+            position: absolute; width: 6px; height: 6px; background: var(--color-primary-hex); border-radius: 50%;
+            box-shadow: 0 0 8px var(--color-primary-hex);
+        }
+        .server-dot::after {
+            content: ''; position: absolute; inset: -4px; border-radius: 50%;
+            border: 1px solid var(--color-primary-hex); animation: ping-ring 2.5s ease-out infinite;
+        }
+        @keyframes ping-ring {
             0% { transform: scale(0.8); opacity: 1; }
             100% { transform: scale(2.5); opacity: 0; }
         }
-        .pulse-ring::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px solid #E30613;
-            animation: pulseRing 2s ease-out infinite;
+
+        /* FAQ Accordion */
+        .faq-item {
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.02);
         }
-
-        /* Float animation */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        .faq-item:hover { border-color: rgba(255,255,255,0.1); }
+        .faq-item.active { border-color: rgba(var(--color-primary), 0.3); }
+        .faq-answer {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1), padding 0.3s;
         }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-float-delay { animation: float 6s ease-in-out 2s infinite; }
-        .animate-float-delay2 { animation: float 6s ease-in-out 4s infinite; }
+        .faq-item.active .faq-answer { max-height: 300px; padding: 0 24px 24px 24px; }
+        .faq-chevron { transition: transform 0.3s; }
+        .faq-item.active .faq-chevron { transform: rotate(180deg); }
 
-        /* Reveal */
-        @keyframes revealUp {
-            from { opacity: 0; transform: translateY(60px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Speed meter */
+        .speed-bar {
+            height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06);
+            overflow: hidden; position: relative;
         }
-        .reveal { opacity: 0; transform: translateY(60px); transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1); }
-        .reveal.active { opacity: 1; transform: translateY(0); }
-
-        /* Typing cursor */
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .cursor { animation: blink 1s infinite; }
-
-        /* Particle canvas */
-        #particles-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
+        .speed-fill {
+            height: 100%; border-radius: 3px;
+            background: linear-gradient(to right, #22c55e, #3b82f6, #a855f7);
+            transform-origin: left;
+            transform: scaleX(0);
+            transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
-
-        /* 3D Globe canvas */
-        #globe-canvas {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90vw; height: 90vw;
-            max-width: 600px; max-height: 600px;
-            z-index: 3;
-            opacity: 0.85;
-        }
-
-        /* Network lines */
-        @keyframes dashMove {
-            to { stroke-dashoffset: -40; }
-        }
-
-        /* Counter */
-        .counter { font-variant-numeric: tabular-nums; }
-
-        /* Feature icon hover */
-        .feature-icon {
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .feature-card:hover .feature-icon {
-            transform: scale(1.2) rotateZ(10deg);
-            box-shadow: 0 0 30px rgba(227, 6, 19, 0.5);
-        }
-
-        /* DNS copy button */
-        @keyframes copied {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        .copied-anim { animation: copied 0.4s ease; }
-
-        /* Hamburger */
-        .hamburger span {
-            display: block; width: 24px; height: 2px;
-            background: #fff; transition: all 0.3s;
-        }
-        .hamburger.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-        .hamburger.open span:nth-child(2) { opacity: 0; }
-        .hamburger.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
-
-        /* Smooth section transitions */
-        section { position: relative; z-index: 2; }
-
-        /* Toast */
-        .toast {
-            position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px);
-            z-index: 9999; transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .toast.show { transform: translateX(-50%) translateY(0); }
-
-        /* Marquee */
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .marquee-track { animation: marquee 30s linear infinite; }
-
-        /* Stat bar fill */
-        @keyframes fillBar {
-            from { width: 0%; }
-        }
-
-        /* Node connection animation */
-        @keyframes nodePulse {
-            0%, 100% { r: 3; opacity: 1; }
-            50% { r: 6; opacity: 0.5; }
-        }
+        .speed-fill.animated { transform: scaleX(1); }
     </style>
 </head>
-<body class="bg-dark text-white font-sans overflow-x-hidden">
+<body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden transition-all duration-500 grid-bg">
 
-    <!-- Particle Background -->
-    <canvas id="particles-canvas"></canvas>
+    <!-- Toast notification matching dns.html -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span id="toast-msg">Link copied!</span>
+    </div>
 
-    <!-- NAVIGATION -->
-    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <a href="#" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-lg animated-gradient flex items-center justify-center">
-                    <svg class="w-6 h-6 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z" fill="rgba(227, 6, 19, 0.2)" stroke="#E30613" stroke-width="3"/>
-                        <path d="M38 50L46 58L62 42" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+    <!-- Navigation Header -->
+    <nav class="fixed top-0 left-0 right-0 z-50 h-20 glass border-b border-white/5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 dynamic-bg-color">
+                    <i data-lucide="shield" class="w-4.5 h-4.5 text-white"></i>
                 </div>
-                <span class="font-display text-xl tracking-wider font-medium">DNS<span class="text-brand">MALIK</span></span>
+                <span class="font-display font-extrabold text-lg tracking-wider text-white">MALIK<span class="dynamic-text-color">NODE</span></span>
             </a>
-            <div class="hidden md:flex items-center gap-8">
-                <a href="#features" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300">Features</a>
-                <a href="#privacy-shield" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300">Privacy Shield</a>
-                <a href="#stats" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300">Stats</a>
-                <a href="#how-it-works" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300">How It Works</a>
-                <a href="#setup" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300">Setup</a>
-                <a href="#faq" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300">FAQ</a>
-                <a href="/RealTime.html" id="loginBtn" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors duration-300 flex items-center gap-1.5 focus:outline-none">
-                    <iconify-icon icon="lucide:log-in" width="16" class="align-middle"></iconify-icon> Logon
-                </a>
-                <a href="#setup" class="ml-4 px-6 py-2.5 bg-brand hover:bg-red-700 text-white text-sm tracking-widest uppercase font-medium transition-all duration-300 rounded-lg glow-red-sm hover:glow-red">
-                    Get Started
-                </a>
+            
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#features" class="text-neutral-400 hover:text-white transition-colors">Features</a>
+                <a href="#dns-stack" class="text-neutral-400 hover:text-white transition-colors">Hardened DNS</a>
+                <a href="#free-dns" class="text-neutral-400 hover:text-white transition-colors">Free DNS</a>
+                <a href="#connect" class="text-neutral-400 hover:text-white transition-colors">Connect</a>
+                <a href="#pricing" class="text-neutral-400 hover:text-white transition-colors">Pricing</a>
+                <a href="#faq" class="text-neutral-400 hover:text-white transition-colors">FAQ</a>
             </div>
-            <button id="menuBtn" class="md:hidden hamburger flex flex-col gap-[6px] p-2">
-                <span></span><span></span><span></span>
-            </button>
-        </div>
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="md:hidden hidden glass-strong">
-            <div class="px-6 py-8 flex flex-col gap-4">
-                <a href="#features" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors py-2 mobile-link">Features</a>
-                <a href="#privacy-shield" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors py-2 mobile-link">Privacy Shield</a>
-                <a href="#stats" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors py-2 mobile-link">Stats</a>
-                <a href="#how-it-works" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors py-2 mobile-link">How It Works</a>
-                <a href="#setup" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors py-2 mobile-link">Setup</a>
-                <a href="#faq" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand transition-colors py-2 mobile-link">FAQ</a>
-                <a href="/RealTime.html" id="mobileLoginBtn" class="text-sm tracking-wide uppercase text-gray-400 hover:text-brand text-left py-2 flex items-center gap-1.5 focus:outline-none">
-                    <iconify-icon icon="lucide:log-in" width="16" class="align-middle"></iconify-icon> Logon
-                </a>
-                <a href="#setup" class="mt-4 px-6 py-3 bg-brand text-white text-sm tracking-widest uppercase font-medium text-center rounded-lg mobile-link">Get Started</a>
+
+            <div class="hidden md:flex items-center gap-3">
+                <!-- Highly Visible Theme Switcher in Navigation Bar -->
+                <button onclick="toggleTheme()" class="px-3.5 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 mr-2" title="Switch Theme">
+                    <i data-lucide="palette" class="w-4 h-4 dynamic-text-color"></i>
+                </button>
+                <a href="https://dashboard.maliknode.app/" class="btn-secondary text-xs !py-2.5 !px-5">Log In</a>
+                <a href="https://dashboard.maliknode.app/" class="btn-primary text-xs !py-2.5 !px-5">Get Started</a>
             </div>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <section id="hero" class="relative h-screen min-h-[800px] flex items-center justify-center overflow-hidden">
-        <!-- 3D Globe -->
-        <canvas id="globe-canvas"></canvas>
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center pt-24 pb-20 overflow-hidden">
+        <!-- Background glows -->
+        <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <!-- Overlay gradient -->
-        <div class="absolute inset-0 bg-gradient-to-b from-dark via-dark/40 to-dark z-[4]"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-dark/80 via-transparent to-dark/80 z-[4]"></div>
+        <div class="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-16 relative z-10">
+            <!-- Left Column -->
+            <div class="flex-1 text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-xs text-neutral-400 font-mono">All systems operational</span>
+                </div>
 
-        <!-- Content -->
-        <div class="relative z-[5] text-center max-w-5xl mx-auto px-6">
-            <!-- Status badge -->
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8" style="animation: revealUp 0.8s ease forwards;">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-xs tracking-widest uppercase text-gray-400 font-mono">System Operational — 99.99% Uptime</span>
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight leading-[0.9] text-white">
+                    Your internet,<br>
+                    <span class="animated-gradient-text">your rules.</span>
+                </h1>
+
+                <p class="mt-8 text-neutral-400 text-base md:text-lg font-light leading-relaxed max-w-lg mx-auto lg:mx-0">
+                    High speed WireGuard VPN tunnels paired with recursive hardware-level privacy. Take back your footprint with zero-log recursive resolve.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mt-10">
+                    <button class="btn-primary" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        Download Free
+                    </button>
+                    <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
+                        Learn More
+                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
 
-            <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight leading-[1.05] mb-6" style="animation: revealUp 0.8s 0.2s ease both;">
-                NEXT-GEN<br>
-                <span class="animated-gradient bg-clip-text text-transparent">SECURE PRIVATE</span><br>
-                DNS PORTAL
-            </h1>
-
-            <p class="text-gray-400 text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto mb-10" style="animation: revealUp 0.8s 0.4s ease both;">
-                Military-grade encryption meets lightning-fast resolution.
-                Protect your digital footprint with MALIKNODE DNS's triple-layered security infrastructure.
-            </p>
-
-            <!-- DNS Address Copy -->
-            <div class="inline-flex items-center gap-3 px-6 py-4 rounded-xl glass mb-10 cursor-pointer group" id="dnsCopy" style="animation: revealUp 0.8s 0.6s ease both;">
-                <iconify-icon icon="lucide:server" width="18" class="text-brand"></iconify-icon>
-                <span class="font-mono text-sm md:text-base tracking-wide text-gray-300">dns.maliknode.app</span>
-                <div class="w-px h-5 bg-gray-700 mx-1"></div>
-                <iconify-icon icon="lucide:copy" width="16" class="text-gray-500 group-hover:text-brand transition-colors" id="copyIcon"></iconify-icon>
-                <span class="text-xs text-gray-600 group-hover:text-gray-400 transition-colors" id="copyText">Copy</span>
-            </div>
-
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4" style="animation: revealUp 0.8s 0.8s ease both;">
-                <a href="#setup" class="px-8 py-4 bg-brand hover:bg-red-700 text-white text-sm tracking-widest uppercase font-medium transition-all duration-300 rounded-lg glow-red-sm hover:glow-red flex items-center gap-2">
-                    Configure Now
-                    <iconify-icon icon="lucide:arrow-right" width="18"></iconify-icon>
-                </a>
-                <a href="#features" class="px-8 py-4 border border-white/10 hover:border-brand/50 text-white text-sm tracking-widest uppercase font-medium transition-all duration-300 rounded-lg hover:bg-white/5 flex items-center gap-2">
-                    Explore Features
-                    <iconify-icon icon="lucide:chevron-down" width="18"></iconify-icon>
-                </a>
+            <!-- Right Column — Custom Browser Interactive Preview Mockup -->
+            <div class="flex-1 flex justify-center w-full">
+                <div class="relative w-full max-w-lg rounded-3xl overflow-hidden glass glass-glow p-3 border border-white/10 pulse-ring">
+                    <div class="rounded-2xl overflow-hidden border border-white/5 bg-zinc-950/90">
+                        <div class="h-10 bg-zinc-900 border-b border-white/5 px-4 flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                            <span class="text-xs text-gray-500 ml-4 font-mono">dashboard.maliknode.app</span>
+                        </div>
+                        <div class="p-6 md:p-8 flex flex-col gap-6 text-left">
+                            <div class="space-y-4">
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-800/30 text-xs font-semibold text-emerald-400">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Instance Online
+                                </div>
+                                <h3 class="font-display font-bold text-2xl text-white">Central Admin Dashboard</h3>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Generate and download customized profile configurations (`.conf` and QR codes) for your active device nodes.
+                                </p>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-zinc-900/60 border border-white/5 font-mono text-[11px] text-blue-400 space-y-2 dynamic-text-color">
+                                <div class="text-gray-500 border-b border-white/5 pb-2 font-sans font-bold">Client Config File</div>
+                                <div>[Interface]</div>
+                                <div>PrivateKey = [client_private_key]</div>
+                                <div>Address = 10.66.66.2/24</div>
+                                <div class="text-emerald-400">DNS = 10.66.66.1</div>
+                                <div class="mt-2">[Peer]</div>
+                                <div>PublicKey = [server_public_key]</div>
+                                <div class="text-white">Endpoint = maliknode.app:51820</div>
+                                <div>AllowedIPs = 0.0.0.0/0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Scroll indicator -->
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-[5] flex flex-col items-center gap-2 animate-bounce">
-            <span class="text-[10px] tracking-widest uppercase text-gray-600">Scroll</span>
-            <iconify-icon icon="lucide:chevron-down" width="16" class="text-gray-600"></iconify-icon>
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
+            <span class="text-[10px] text-neutral-600 uppercase tracking-widest">Scroll</span>
+            <div class="w-5 h-8 rounded-full border border-white/10 flex items-start justify-center p-1.5">
+                <div class="w-1 h-2 rounded-full bg-white/30 animate-bounce"></div>
+            </div>
         </div>
     </section>
 
-    <!-- MARQUEE BANNER -->
-    <div class="relative z-10 py-4 border-y border-white/5 bg-dark-alt/50 overflow-hidden">
-        <div class="flex whitespace-nowrap marquee-track">
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:lock" width="12" class="text-brand"></iconify-icon> TLS 1.3 Encrypted
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:zap" width="12" class="text-brand"></iconify-icon> Ultra-Low Latency
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:shield" width="12" class="text-brand"></iconify-icon> Zero-Log Policy
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:globe" width="12" class="text-brand"></iconify-icon> Global Coverage
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:ban" width="12" class="text-brand"></iconify-icon> Ad Blocker Built-In
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:device-desktop" width="12" class="text-brand"></iconify-icon> Cross-Platform
-            </span>
-            <!-- Duplicate for seamless loop -->
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:lock" width="12" class="text-brand"></iconify-icon> TLS 1.3 Encrypted
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:zap" width="12" class="text-brand"></iconify-icon> Ultra-Low Latency
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:shield" width="12" class="text-brand"></iconify-icon> Zero-Log Policy
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:globe" width="12" class="text-brand"></iconify-icon> Global Coverage
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:ban" width="12" class="text-brand"></iconify-icon> Ad Blocker Built-In
-            </span>
-            <span class="mx-8 text-xs tracking-widest uppercase text-gray-600 font-mono flex items-center gap-2">
-                <iconify-icon icon="lucide:device-desktop" width="12" class="text-brand"></iconify-icon> Cross-Platform
-            </span>
+    <!-- Trust Bar -->
+    <section class="py-12 border-y border-white/5 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/3 via-transparent to-blue-500/3 pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+                <span class="text-xs text-neutral-600 uppercase tracking-widest">Trusted by developers at</span>
+                <span class="text-neutral-500 font-medium text-lg opacity-40">Stripe</span>
+                <span class="text-neutral-500 font-medium text-lg opacity-40">Vercel</span>
+                <span class="text-neutral-500 font-medium text-lg opacity-40">Linear</span>
+                <span class="text-neutral-500 font-medium text-lg opacity-40">Notion</span>
+                <span class="text-neutral-500 font-medium text-lg opacity-40">Figma</span>
+                <span class="text-neutral-500 font-medium text-lg opacity-40">GitHub</span>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <!-- FEATURES SECTION -->
-    <section id="features" class="relative z-10 py-24 px-6">
-        <div class="max-w-7xl mx-auto">
-            <!-- Section header -->
+    <!-- Why MalikNode is Different -->
+    <section id="features" class="py-32 relative">
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
             <div class="text-center mb-20 reveal">
-                <span class="text-xs tracking-[0.3em] uppercase text-brand font-mono mb-4 block">Core Infrastructure</span>
-                <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight mb-6">Triple-Layered<br>Security Architecture</h2>
-                <p class="text-gray-400 font-light max-w-xl mx-auto leading-relaxed">Every DNS query passes through our three-stage defense system, ensuring complete privacy and protection from malicious actors.</p>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i>
+                    <span class="text-xs text-neutral-400 font-medium">Why MalikNode</span>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight">
+                    Why MalikNode is Different<br><span class="text-neutral-500">Built better.</span>
+                </h2>
             </div>
 
-            <!-- Feature cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 <!-- Feature 1 -->
-                <div class="card-3d reveal" style="transition-delay: 0.1s;">
-                    <div class="card-3d-inner feature-card glass rounded-2xl p-8 md:p-10 h-full group cursor-default gradient-border">
-                        <div class="relative mb-8">
-                            <div class="w-16 h-16 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center feature-icon">
-                                <iconify-icon icon="lucide:lock-keyhole" width="28" class="text-brand"></iconify-icon>
-                            </div>
-                            <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-brand flex items-center justify-center text-xs font-bold font-display">01</span>
+                <div class="feature-card reveal" onmousemove="handleCardMouse(event, this)">
+                    <div class="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center mb-5">
+                        <i data-lucide="zap" class="w-5 h-5 text-green-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Blazing Fast</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed">State-of-the-art kernel integration delivers raw WireGuard speed. Stream, code, and route without a hint of lag.</p>
+                    <div class="mt-6">
+                        <div class="flex justify-between text-xs text-neutral-500 mb-2">
+                            <span>Interface Speed</span>
+                            <span>9.8 Gbps</span>
                         </div>
-                        <h3 class="font-display text-xl tracking-wide uppercase mb-4">Encrypted TLS Tunneling</h3>
-                        <p class="text-gray-400 font-light leading-relaxed mb-6">DNS queries are wrapped in TLS 1.3 encryption tunnels, preventing ISP surveillance, man-in-the-middle attacks, and DNS hijacking attempts.</p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">DoT</span>
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">DoH</span>
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">TLS 1.3</span>
-                        </div>
-                        <!-- Visual element -->
-                        <div class="mt-8 pt-6 border-t border-white/5">
-                            <div class="flex items-center gap-3">
-                                <div class="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
-                                    <div class="h-full w-[95%] rounded-full animated-gradient"></div>
-                                </div>
-                                <span class="text-xs font-mono text-brand">95%</span>
-                            </div>
-                            <p class="text-[10px] text-gray-600 mt-2 tracking-wide uppercase">Encryption Coverage</p>
-                        </div>
+                        <div class="speed-bar"><div class="speed-fill" style="width:98%"></div></div>
                     </div>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="card-3d reveal" style="transition-delay: 0.2s;">
-                    <div class="card-3d-inner feature-card glass rounded-2xl p-8 md:p-10 h-full group cursor-default gradient-border">
-                        <div class="relative mb-8">
-                            <div class="w-16 h-16 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center feature-icon" style="--brand-color: #3b82f6;">
-                                <iconify-icon icon="lucide:eye-off" width="28" class="text-blue-400"></iconify-icon>
-                            </div>
-                            <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold font-display">02</span>
-                        </div>
-                        <h3 class="font-display text-xl tracking-wide uppercase mb-4">Ad & Tracker Interception</h3>
-                        <p class="text-gray-400 font-light leading-relaxed mb-6">Real-time filtering blocks ads, trackers, and malware domains at the DNS level, dramatically improving page load speeds and privacy.</p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">AdBlock</span>
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">0-Tracker</span>
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">Malware</span>
-                        </div>
-                        <!-- Visual element -->
-                        <div class="mt-8 pt-6 border-t border-white/5">
-                            <div class="flex items-center gap-3">
-                                <div class="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
-                                    <div class="h-full w-[89%] rounded-full bg-gradient-to-r from-blue-500 to-blue-400"></div>
-                                </div>
-                                <span class="text-xs font-mono text-blue-400">89%</span>
-                            </div>
-                            <p class="text-[10px] text-gray-600 mt-2 tracking-wide uppercase">Ads Blocked</p>
-                        </div>
+                <div class="feature-card reveal" onmousemove="handleCardMouse(event, this)">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-5">
+                        <i data-lucide="lock" class="w-5 h-5 text-purple-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Hardened Privacy</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed">ChaCha20 encryption with perfect forward secrecy. Your data packets remain locked down recursively.</p>
+                    <div class="mt-6 flex flex-wrap gap-2">
+                        <div class="px-2.5 py-1 rounded-lg bg-purple-500/10 text-[10px] text-purple-400 font-mono">ChaCha20</div>
+                        <div class="px-2.5 py-1 rounded-lg bg-purple-500/10 text-[10px] text-purple-400 font-mono">Poly1305</div>
+                        <div class="px-2.5 py-1 rounded-lg bg-purple-500/10 text-[10px] text-purple-400 font-mono">PFS</div>
                     </div>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="card-3d reveal" style="transition-delay: 0.3s;">
-                    <div class="card-3d-inner feature-card glass rounded-2xl p-8 md:p-10 h-full group cursor-default gradient-border">
-                        <div class="relative mb-8">
-                            <div class="w-16 h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center feature-icon">
-                                <iconify-icon icon="lucide:shield-check" width="28" class="text-emerald-400"></iconify-icon>
-                            </div>
-                            <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-xs font-bold font-display">03</span>
-                        </div>
-                        <h3 class="font-display text-xl tracking-wide uppercase mb-4">Universal Network Defense</h3>
-                        <p class="text-gray-400 font-light leading-relaxed mb-6">Comprehensive protection across all devices on your network. From smartphones to IoT devices, every connection is secured automatically.</p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">Multi-Device</span>
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">IoT</span>
-                            <span class="px-3 py-1 text-[10px] tracking-widest uppercase bg-white/5 rounded-full text-gray-500">Auto-Sec</span>
-                        </div>
-                        <!-- Visual element -->
-                        <div class="mt-8 pt-6 border-t border-white/5">
-                            <div class="flex items-center gap-3">
-                                <div class="flex-1 h-1 rounded-full bg-white/5 overflow-hidden">
-                                    <div class="h-full w-[97%] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"></div>
-                                </div>
-                                <span class="text-xs font-mono text-emerald-400">97%</span>
-                            </div>
-                            <p class="text-[10px] text-gray-600 mt-2 tracking-wide uppercase">Device Coverage</p>
-                        </div>
+                <div class="feature-card reveal" onmousemove="handleCardMouse(event, this)">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-5">
+                        <i data-lucide="eye-off" class="w-5 h-5 text-blue-400"></i>
                     </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Zero-Log Policy</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed">We don't track, log, or sell your connections. Direct recursive resolutions mean zero log trail.</p>
+                    <div class="mt-6 flex items-center gap-3">
+                        <div class="w-7 h-7 rounded-full bg-green-500/10 flex items-center justify-center">
+                            <i data-lucide="check" class="w-4 h-4 text-green-400"></i>
+                        </div>
+                        <span class="text-xs text-green-400 font-medium">Internal Audit Passed</span>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card reveal" onmousemove="handleCardMouse(event, this)">
+                    <div class="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-5">
+                        <i data-lucide="globe" class="w-5 h-5 text-orange-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">AdGuard Home Blocklist</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed">Integrated hardware-level blocklist removes advertising frames, tracking SDKs, and malware before load.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card reveal" onmousemove="handleCardMouse(event, this)">
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 flex items-center justify-center mb-5">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-cyan-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Tunnel Kill Switch</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed">If the server connection drops, the client automatically shuts down local internet access to prevent raw leaks.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card reveal" onmousemove="handleCardMouse(event, this)">
+                    <div class="w-12 h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center mb-5">
+                        <i data-lucide="users" class="w-5 h-5 text-pink-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Client-to-Client Isolation</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed">Strict firewall rules isolate peers on the VPN. Freelancers and teams remain sandboxed from scanning threat vectors.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- PRIVACY SHIELD SECTION -->
-    <section id="privacy-shield" class="relative z-10 py-24 px-6">
-        <div class="max-w-7xl mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-16 reveal">
-                <span class="text-xs tracking-[0.3em] uppercase text-brand font-mono mb-4 block">Privacy Breakthrough</span>
-                <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight mb-4">The Sovereign Privacy Shield</h2>
-                <p class="text-gray-500 font-light max-w-xl mx-auto leading-relaxed text-sm">Commercial VPNs, public DNS servers, and search engines actively catalog and sell your browsing profile. MALIKNODE DNS gives you complete sovereignty.</p>
+    <!-- DNS Stack / Real-time Animated Request Flow (ngrok style) -->
+    <section id="dns-stack" class="relative max-w-7xl mx-auto px-6 py-24 border-t border-white/5 overflow-hidden">
+        <div class="max-w-4xl mx-auto text-center mb-16">
+            <div class="text-blue-500 font-bold uppercase tracking-wider text-xs mb-3 dynamic-text-color">Resolving Visualizer</div>
+            <h2 class="font-display font-extrabold text-4xl text-white mb-4">DNS Resolving Flow</h2>
+            <p class="text-gray-400">Watch your queries trace dynamically through AdGuard and Unbound resolvers in real-time.</p>
+        </div>
+
+        <!-- Real Working CSS/JS Animated Network Flow Diagram -->
+        <div id="dns-flow-container" class="relative w-full max-w-4xl mx-auto p-12 rounded-3xl glass border border-white/10 bg-zinc-950/40 overflow-hidden min-h-[300px] flex items-center justify-between gap-6">
+            
+            <!-- Step 1: Device Query -->
+            <div class="relative w-[180px] p-6 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 mb-4 dynamic-bg-glow">
+                    <i data-lucide="monitor" class="w-6 h-6 dynamic-text-color"></i>
+                </div>
+                <div class="text-xs font-bold text-white mb-1 font-sans">1. Device Query</div>
+                <div class="text-[10px] text-blue-400 font-mono dynamic-text-color">dns.maliknode.app</div>
             </div>
 
-            <!-- Comparison Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 reveal">
-                
-                <!-- Card 1: Commercial VPNs & ISPs -->
-                <div class="glass rounded-2xl p-6 md:p-8 border border-red-500/10 hover:border-red-500/30 transition-all duration-500 shadow-[0_4px_30px_rgba(239,68,68,0.02)]">
-                    <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
-                        <iconify-icon icon="lucide:shield-alert" width="24" class="text-red-500"></iconify-icon>
-                    </div>
-                    <h3 class="font-display text-xl font-medium mb-1 text-red-400">Public Providers & ISPs</h3>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-mono mb-4">The Silent Profilers</p>
-                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">Commercial VPNs and public DNS (Google, Cloudflare, or your ISP) log every site you request. Your data is analyzed and sold to brokers. If a service is free, your privacy is the product.</p>
-                    <ul class="space-y-3 pt-4 border-t border-white/5 font-mono text-xs">
-                        <li class="flex items-center gap-2 text-red-500/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Logs search history & habits</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-red-500/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Subject to corporate subpoenas</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-red-500/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Shares metadata with brokers</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-red-500/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>No protection against trackers</span>
-                        </li>
-                    </ul>
-                </div>
+            <!-- Connection Line 1 -->
+            <div class="hidden md:block absolute top-[52%] left-[28%] right-[60%] h-[3px] bg-zinc-800/40 -translate-y-1/2 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-500 to-emerald-500 w-full animate-[pulse_2s_infinite]"></div>
+            </div>
 
-                <!-- Card 2: Google & Big Tech Profiling -->
-                <div class="glass rounded-2xl p-6 md:p-8 border border-blue-500/10 hover:border-blue-500/30 transition-all duration-500 shadow-[0_4px_30px_rgba(59,130,246,0.02)]">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6">
-                        <iconify-icon icon="lucide:eye-off" width="24" class="text-blue-400"></iconify-icon>
-                    </div>
-                    <h3 class="font-display text-xl font-medium mb-1 text-blue-400">Big Tech Profiling</h3>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-mono mb-4">Anti-Telemetry Shielding</p>
-                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">Tech giants track your coordinates and actions using script beacons and telemetry. MALIKNODE DNS intercepts these scripts at the network layer, preventing connections to 2.1M+ tracking servers.</p>
-                    <ul class="space-y-3 pt-4 border-t border-white/5 font-mono text-xs">
-                        <li class="flex items-center gap-2 text-blue-400/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Blocks script analytics & cookies</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-blue-400/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Prevents browser profiling</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-blue-400/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Stops telemetry phone-homes</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-blue-400/80">
-                            <iconify-icon icon="lucide:x-circle" width="16"></iconify-icon>
-                            <span>Invalides Google DoubleClick ads</span>
-                        </li>
-                    </ul>
+            <!-- Step 2: AdGuard Filtering -->
+            <div class="relative w-[180px] p-6 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10">
+                <div id="adguard-shield" class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4 transition-all duration-300">
+                    <i data-lucide="shield" class="w-6 h-6"></i>
                 </div>
+                <div class="text-xs font-bold text-white mb-1 font-sans">2. AdGuard Filtering</div>
+                <div class="text-[10px] text-emerald-400 font-mono">Blocks Ads / Trackers</div>
+            </div>
 
-                <!-- Card 3: MALIKNODE DNS Sovereign Shield -->
-                <div class="glass rounded-2xl p-6 md:p-8 border border-emerald-500/10 hover:border-emerald-500/30 transition-all duration-500 shadow-[0_4px_30px_rgba(16,185,129,0.02)]">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
-                        <iconify-icon icon="lucide:shield-check" width="24" class="text-emerald-400"></iconify-icon>
-                    </div>
-                    <h3 class="font-display text-xl font-medium mb-1 text-emerald-400">Sovereign Shield</h3>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-mono mb-4">You Own the Keys</p>
-                    <p class="text-gray-400 font-light text-sm leading-relaxed mb-6">Self-hosting on your private Cloud VPS puts you in control. WireGuard VPN encrypts your connection and masks your physical location with the VPS IP. Nobody can capture or sell your logs.</p>
-                    <ul class="space-y-3 pt-4 border-t border-white/5 font-mono text-xs">
-                        <li class="flex items-center gap-2 text-emerald-400/80">
-                            <iconify-icon icon="lucide:check-circle" width="16"></iconify-icon>
-                            <span>100% sovereign hosting on your VPS</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-emerald-400/80">
-                            <iconify-icon icon="lucide:check-circle" width="16"></iconify-icon>
-                            <span>TLS 1.3 encrypted DNS traffic</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-emerald-400/80">
-                            <iconify-icon icon="lucide:check-circle" width="16"></iconify-icon>
-                            <span>Masks location via VPS IP masking</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-emerald-400/80">
-                            <iconify-icon icon="lucide:check-circle" width="16"></iconify-icon>
-                            <span>Absolute zero commercial logging</span>
-                        </li>
-                    </ul>
+            <!-- Connection Line 2 -->
+            <div class="hidden md:block absolute top-[52%] left-[60%] right-[28%] h-[3px] bg-zinc-800/40 -translate-y-1/2 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 w-full animate-[pulse_2s_infinite]"></div>
+            </div>
+
+            <!-- Step 3: Unbound Recursive Resolving -->
+            <div class="relative w-[180px] p-6 rounded-2xl bg-zinc-900 border border-white/5 flex flex-col items-center text-center z-10">
+                <div id="unbound-globe" class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-4 transition-all duration-300">
+                    <i data-lucide="globe" class="w-6 h-6"></i>
                 </div>
+                <div class="text-xs font-bold text-white mb-1 font-sans">3. Unbound Recursive</div>
+                <div class="text-[10px] text-indigo-400 font-mono">Root DNS Server</div>
+            </div>
 
+        </div>
+    </section>
+
+    <!-- Free DNS Service Promotion Section -->
+    <section id="free-dns" class="max-w-7xl mx-auto px-6 py-24 border-t border-white/5 text-center relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="max-w-3xl mx-auto space-y-6 relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-950/40 border border-emerald-800/30 text-xs font-semibold text-emerald-400 mb-2 uppercase tracking-wider">
+                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                Free Secure DNS Portal
+            </div>
+            <h2 class="font-display font-extrabold text-4xl text-white">Don't Need a VPN? Get Free Secure DNS!</h2>
+            <p class="text-gray-400 text-base leading-relaxed">
+                If you only need private, tracker-free DNS lookup without routing your entire data connection, configure our custom DNS directly on your system for free.
+            </p>
+            <div class="pt-6">
+                <a href="https://dns.maliknode.app/" target="_blank" class="px-8 h-12 inline-flex items-center justify-center rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all hover:scale-105 shadow-lg shadow-emerald-500/20">
+                    Visit Free DNS Portal
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- STATS SECTION -->
-    <section id="stats" class="relative z-10 py-24 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="glass rounded-3xl p-8 md:p-16 gradient-border reveal">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-                    <div class="text-center">
-                        <div class="font-display text-4xl md:text-6xl font-medium text-brand counter mb-2" data-target="99.99">0</div>
-                        <div class="text-xs tracking-[0.2em] uppercase text-gray-500 font-mono">Uptime %</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="font-display text-4xl md:text-6xl font-medium text-white counter mb-2" data-target="2.4">0</div>
-                        <div class="text-xs tracking-[0.2em] uppercase text-gray-500 font-mono">Avg Latency (ms)</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="font-display text-4xl md:text-6xl font-medium text-white counter mb-2" data-target="1500000">0</div>
-                        <div class="text-xs tracking-[0.2em] uppercase text-gray-500 font-mono">Queries / Day</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="font-display text-4xl md:text-6xl font-medium text-white counter mb-2" data-target="50000">0</div>
-                        <div class="text-xs tracking-[0.2em] uppercase text-gray-500 font-mono">Active Users</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section id="how-it-works" class="relative z-10 py-24 px-6">
-        <div class="max-w-5xl mx-auto">
+    <!-- How It Works Section matching dns.html -->
+    <section id="connect" class="py-32 relative border-t border-white/5">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/3 to-transparent pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
             <div class="text-center mb-20 reveal">
-                <span class="text-xs tracking-[0.3em] uppercase text-brand font-mono mb-4 block">Process Flow</span>
-                <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight mb-6">How MALIKNODE DNS Works</h2>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <i data-lucide="play-circle" class="w-3.5 h-3.5 text-blue-400"></i>
+                    <span class="text-xs text-neutral-400 font-medium">How It Works</span>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white">
+                    Connected in<br><span class="text-neutral-500">three steps.</span>
+                </h2>
             </div>
 
-            <div class="relative">
-                <!-- Vertical line -->
-                <div class="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-brand via-blue-500 to-emerald-500 md:-translate-x-px"></div>
-
-                <!-- Step 1 -->
-                <div class="relative flex items-center mb-16 reveal">
-                    <div class="w-12 h-12 rounded-full bg-brand flex items-center justify-center z-10 shrink-0 glow-red-sm md:absolute md:left-1/2 md:-translate-x-1/2">
-                        <span class="font-display text-sm font-bold">01</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="reveal text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 relative">
+                        <span class="text-2xl font-light text-purple-400">1</span>
+                        <div class="absolute -right-4 top-1/2 -translate-y-1/2 hidden md:block">
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-neutral-600"></i>
+                        </div>
                     </div>
-                    <div class="ml-6 md:ml-0 md:w-[45%] md:pr-12 glass rounded-2xl p-6 md:absolute md:left-0">
-                        <h3 class="font-display text-lg tracking-wide uppercase mb-3 text-brand">Your Device Sends Query</h3>
-                        <p class="text-gray-400 font-light leading-relaxed text-sm">When you type a URL, your device sends a DNS query through an encrypted TLS tunnel to MALIKNODE DNS instead of your ISP's default resolver.</p>
-                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Download & Install</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed max-w-xs mx-auto">Get the app for your platform. It's lightweight and installs in seconds.</p>
                 </div>
 
-                <!-- Step 2 -->
-                <div class="relative flex items-center mb-16 reveal">
-                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center z-10 shrink-0 md:absolute md:left-1/2 md:-translate-x-1/2" style="box-shadow: 0 0 20px rgba(59,130,246,0.3);">
-                        <span class="font-display text-sm font-bold">02</span>
+                <div class="reveal text-center" style="transition-delay:0.15s">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 relative">
+                        <span class="text-2xl font-light text-blue-400">2</span>
+                        <div class="absolute -right-4 top-1/2 -translate-y-1/2 hidden md:block">
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-neutral-600"></i>
+                        </div>
                     </div>
-                    <div class="ml-6 md:ml-0 md:w-[45%] md:pl-12 glass rounded-2xl p-6 md:absolute md:right-0">
-                        <h3 class="font-display text-lg tracking-wide uppercase mb-3 text-blue-400">Ad & Threat Filtering</h3>
-                        <p class="text-gray-400 font-light leading-relaxed text-sm">Our servers cross-reference the query against real-time blocklists, filtering out ads, trackers, phishing sites, and malware domains instantly.</p>
-                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Scan or Import Config</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed max-w-xs mx-auto">Scan a QR code or import your configuration file. One tap, that's it.</p>
                 </div>
 
-                <!-- Step 3 -->
-                <div class="relative flex items-center reveal">
-                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center z-10 shrink-0 md:absolute md:left-1/2 md:-translate-x-1/2" style="box-shadow: 0 0 20px rgba(16,185,129,0.3);">
-                        <span class="font-display text-sm font-bold">03</span>
+                <div class="reveal text-center" style="transition-delay:0.3s">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-light text-green-400">3</span>
                     </div>
-                    <div class="ml-6 md:ml-0 md:w-[45%] md:pr-12 glass rounded-2xl p-6 md:absolute md:left-0">
-                        <h3 class="font-display text-lg tracking-wide uppercase mb-3 text-emerald-400">Secure Resolution</h3>
-                        <p class="text-gray-400 font-light leading-relaxed text-sm">Clean queries are resolved through our optimized global DNS network and returned to you with full encryption — faster and safer than ever.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- LIVE DASHBOARD -->
-    <section class="relative z-10 py-24 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16 reveal">
-                <span class="text-xs tracking-[0.3em] uppercase text-brand font-mono mb-4 block">Live Dashboard</span>
-                <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight mb-6">Real-Time Network Status</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
-                <!-- Query Monitor -->
-                <div class="md:col-span-2 glass rounded-2xl p-6 md:p-8 gradient-border">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                        <h3 class="font-display text-sm tracking-widest uppercase text-gray-400">Real-Time Performance Monitor</h3>
-                        <div class="flex flex-wrap items-center gap-4 text-xs font-mono">
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#E30613] shadow-[0_0_8px_#E30613]"></span> CPU: <span id="legendCpu" class="text-white">0%</span></span>
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#3b82f6] shadow-[0_0_8px_#3b82f6]"></span> RAM: <span id="legendMem" class="text-white">0%</span></span>
-                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981]"></span> Net: <span id="legendNet" class="text-white">0.0 KB/s</span></span>
-                            <span class="flex items-center gap-2 border-l border-white/10 pl-4">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                <span class="text-green-400 font-semibold">LIVE</span>
-                            </span>
-                        </div>
-                    </div>
-                    <canvas id="queryChart" class="w-full h-[200px] block" height="200"></canvas>
-                </div>
-
-                <!-- Server Status -->
-                <div class="glass rounded-2xl p-6 md:p-8 gradient-border">
-                    <h3 class="font-display text-sm tracking-widest uppercase text-gray-400 mb-6">Server Status</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-400">CPU Usage</span>
-                                <span class="font-mono text-brand" id="cpuText">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full animated-gradient" id="cpuBar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-400">Memory</span>
-                                <span class="font-mono text-blue-400" id="memText">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400" id="memBar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-400">Bandwidth</span>
-                                <span class="font-mono text-emerald-400" id="netText">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" id="netBar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-400">Cache Hit Rate</span>
-                                <span class="font-mono text-amber-400" id="cacheText">0%</span>
-                            </div>
-                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400" id="cacheBar" style="width: 0%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 pt-6 border-t border-white/5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-gray-600 uppercase tracking-widest">Active Connections</span>
-                            <span class="font-mono text-lg text-white" id="activeConns">1,247</span>
-                        </div>
-                    </div>
+                    <h3 class="text-lg font-medium mb-3 text-white">Connect & Browse</h3>
+                    <p class="text-sm text-neutral-400 font-light leading-relaxed max-w-xs mx-auto">Hit connect. You're now encrypted, private, and free. That simple.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SETUP SECTION -->
-    <section id="setup" class="relative z-10 py-24 px-6">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-16 reveal">
-                <span class="text-xs tracking-[0.3em] uppercase text-brand font-mono mb-4 block">Quick Setup</span>
-                <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight mb-6">Get Protected in 60 Seconds</h2>
-                <p class="text-gray-400 font-light max-w-xl mx-auto leading-relaxed">Choose your platform and follow the simple steps. No technical expertise required.</p>
+    <!-- Download Section matching dns.html -->
+    <section id="download" class="py-32 relative border-t border-white/5">
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-500/5 rounded-full blur-[150px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-20 reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-green-400"></i>
+                    <span class="text-xs text-neutral-400 font-medium">Download</span>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white">
+                    Get PortBro for<br><span class="text-neutral-500">every device.</span>
+                </h2>
+                <p class="mt-4 text-neutral-400 font-light max-w-md mx-auto">Available on all major platforms. Download the client, add your config, and go.</p>
             </div>
 
-            <!-- Platform tabs -->
-            <div class="flex flex-wrap items-center justify-center gap-2 md:gap-4 mb-10 reveal">
-                <button class="platform-tab active px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm tracking-wide uppercase transition-all duration-300" data-platform="windows">
-                    <iconify-icon icon="lucide:monitor" width="16" class="mr-1 align-middle"></iconify-icon> Windows
-                </button>
-                <button class="platform-tab px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm tracking-wide uppercase transition-all duration-300" data-platform="mac">
-                    <iconify-icon icon="lucide:laptop" width="16" class="mr-1 align-middle"></iconify-icon> macOS
-                </button>
-                <button class="platform-tab px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm tracking-wide uppercase transition-all duration-300" data-platform="android">
-                    <iconify-icon icon="lucide:smartphone" width="16" class="mr-1 align-middle"></iconify-icon> Android
-                </button>
-                <button class="platform-tab px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm tracking-wide uppercase transition-all duration-300" data-platform="ios">
-                    <iconify-icon icon="lucide:tablet-smartphone" width="16" class="mr-1 align-middle"></iconify-icon> iOS
-                </button>
-            </div>
-
-            <!-- Steps -->
-            <div class="glass rounded-2xl p-8 md:p-12 gradient-border reveal">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                 <!-- Windows -->
-                <div class="platform-content active" id="platform-windows">
-                    <div class="space-y-8">
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">1</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">Open Settings → Network & Internet</h4>
-                                <p class="text-gray-400 font-light text-sm">Go to your network settings and click on your active connection (Wi-Fi or Ethernet).</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">2</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">Edit DNS Settings</h4>
-                                <p class="text-gray-400 font-light text-sm">Click "Edit" next to DNS server assignment, switch to Manual, and toggle **IPv4 and IPv6** to ON.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">3</span>
-                            </div>
-                            <div class="w-full space-y-4">
-                                <h4 class="font-medium mb-1">Enter DNS IPs & DoH Template</h4>
-                                <p class="text-gray-400 font-light text-sm">Configure both IPv4 and IPv6 to avoid DNS leaks, select **Encrypted only (DNS over HTTPS)**, and enter the templates:</p>
-                                
-                                <!-- IPv4 Input -->
-                                <div class="space-y-1">
-                                    <span class="text-xs text-gray-500 block">Preferred DNS (IPv4)</span>
-                                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                        <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">129.153.222.165</pre>
-                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                            <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- IPv6 Input -->
-                                <div class="space-y-1">
-                                    <span class="text-xs text-gray-500 block">Preferred DNS (IPv6)</span>
-                                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                        <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">2603:c020:26:1f00:0:53ac:f6f0:5281</pre>
-                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                            <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- DoH Template -->
-                                <div class="space-y-1">
-                                    <span class="text-xs text-gray-500 block">DNS over HTTPS Template</span>
-                                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                        <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">https://windows.dns.maliknode.app/dns-query</pre>
-                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                            <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Domain Explanation -->
-                                <p class="text-gray-500 font-light text-xs mt-2 leading-relaxed">
-                                    <strong>Note on Domain:</strong> The template domain <code class="text-brand/90 font-mono">windows.dns.maliknode.app</code> is a dual-stack secure alias. It resolves to both our IPv4 and IPv6 addresses. This ensures Windows can establish an encrypted HTTPS connection natively using whichever IP protocol your internet connection prefers.
-                                </p>
-                                <div class="mt-4 pt-4 border-t border-white/5 flex items-center gap-2 text-xs text-gray-400">
-                                    <iconify-icon icon="lucide:info" width="16" class="text-brand shrink-0"></iconify-icon>
-                                    <span>Want this setting to apply to all Wi-Fi networks and persist permanently? <a href="/faq.html#faq-windows-persistence" target="_blank" rel="noopener noreferrer" class="text-brand hover:underline inline-flex items-center gap-0.5 font-medium">Read the persistence guide <iconify-icon icon="lucide:arrow-up-right" width="12"></iconify-icon></a></span>
-                                </div>
-                            </div>
-                        </div>
+                <a href="https://download.wireguard.com/windows-client/wireguard-installer.exe" target="_blank" class="os-card reveal group">
+                    <div class="os-icon w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
                     </div>
-                </div>
+                    <h3 class="text-sm font-medium mb-1 text-white">Windows</h3>
+                    <p class="text-xs text-neutral-500">7 / 8 / 10 / 11</p>
+                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
+                        <span>Download</span>
+                        <i data-lucide="arrow-down" class="w-3 h-3"></i>
+                    </div>
+                </a>
 
                 <!-- macOS -->
-                <div class="platform-content" id="platform-mac" style="display:none;">
-                    <div class="space-y-8">
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">1</span>
-                            </div>
-                            <div class="w-full">
-                                <h4 class="font-medium mb-2">Use Native Encrypted DNS Profile</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">macOS supports native DNS-over-TLS/HTTPS using profiles. Copy this configuration code, save it as `dns.mobileconfig`, and double-click to install it:</p>
-                                <div class="bg-black/40 rounded-lg p-4 font-mono text-xs text-brand relative max-w-xl w-full">
-                                    <pre class="whitespace-pre-wrap text-left text-[10px] leading-tight select-all max-h-40 overflow-y-auto block pr-10 scrollbar-thin">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-&lt;dict&gt;
-    &lt;key&gt;PayloadContent&lt;/key&gt;
-    &lt;array&gt;
-        &lt;dict&gt;
-            &lt;key&gt;DNSSettings&lt;/key&gt;
-            &lt;dict&gt;
-                &lt;key&gt;DNSProtocol&lt;/key&gt;
-                &lt;string&gt;HTTPS&lt;/string&gt;
-                &lt;key&gt;ServerURL&lt;/key&gt;
-                &lt;string&gt;https://mac.dns.maliknode.app/dns-query&lt;/string&gt;
-            &lt;/dict&gt;
-            &lt;key&gt;PayloadDescription&lt;/key&gt;
-            &lt;string&gt;Configures Secure DNS-over-HTTPS&lt;/string&gt;
-            &lt;key&gt;PayloadDisplayName&lt;/key&gt;
-            &lt;string&gt;DNSmalik Secure DoH&lt;/string&gt;
-            &lt;key&gt;PayloadIdentifier&lt;/key&gt;
-            &lt;string&gt;com.apple.dnsSettings.managed&lt;/string&gt;
-            &lt;key&gt;PayloadType&lt;/key&gt;
-            &lt;string&gt;com.apple.dnsSettings.managed&lt;/string&gt;
-            &lt;key&gt;PayloadUUID&lt;/key&gt;
-            &lt;string&gt;8A6B3D6E-C1B0-4A3C-9F4D-9B8A7C6D5E4F&lt;/string&gt;
-            &lt;key&gt;PayloadVersion&lt;/key&gt;
-            &lt;integer&gt;1&lt;/integer&gt;
-        &lt;/dict&gt;
-    &lt;/array&gt;
-    &lt;key&gt;PayloadDisplayName&lt;/key&gt;
-    &lt;string&gt;DNSmalik Secure DNS&lt;/string&gt;
-    &lt;key&gt;PayloadIdentifier&lt;/key&gt;
-    &lt;string&gt;org.dnsmalik.secure&lt;/string&gt;
-    &lt;key&gt;PayloadType&lt;/key&gt;
-    &lt;string&gt;Configuration&lt;/string&gt;
-    &lt;key&gt;PayloadUUID&lt;/key&gt;
-    &lt;string&gt;9F8E7D6C-5B4A-3C2B-1A09-8F7E6D5C4B3A&lt;/string&gt;
-    &lt;key&gt;PayloadVersion&lt;/key&gt;
-    &lt;integer&gt;1&lt;/integer&gt;
-&lt;/dict&gt;
-&lt;/plist&gt;</pre>
-                                    <button class="absolute top-3 right-3 copy-setup text-gray-500 hover:text-brand transition-colors" onclick="copyDNSVal(this.parentNode.querySelector('pre').innerText, this)">
-                                        <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">2</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">DoT Configuration (Port 853)</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">Use the following Server Name for DNS-over-TLS profile payload:</p>
-                                <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                    <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">mac.dns.maliknode.app</pre>
-                                    <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                        <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">3</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">DoH Configuration (Port 443)</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">Use the following URL for DNS-over-HTTPS profile payload:</p>
-                                <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                    <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">https://mac.dns.maliknode.app/dns-query</pre>
-                                    <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                        <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                <a href="https://apps.apple.com/us/app/wireguard/id1451685025" target="_blank" class="os-card reveal group" style="transition-delay:0.05s">
+                    <div class="os-icon w-14 h-14 rounded-2xl bg-neutral-500/10 flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-neutral-300" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                     </div>
-                </div>
+                    <h3 class="text-sm font-medium mb-1 text-white">macOS</h3>
+                    <p class="text-xs text-neutral-500">11+ (Intel / M1 / M2)</p>
+                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
+                        <span>App Store</span>
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </div>
+                </a>
 
-                <!-- Android -->
-                <div class="platform-content" id="platform-android" style="display:none;">
-                    <div class="space-y-8">
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">1</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">Settings → Network & Internet → Private DNS</h4>
-                                <p class="text-gray-400 font-light text-sm">Open system Settings, search for Private DNS, and click on it.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">2</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">Select "Private DNS provider hostname"</h4>
-                                <p class="text-gray-400 font-light text-sm">Choose the manual hostname input option.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">3</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">Enter Any Subdomain Hostname (Wildcard Support)</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">Thanks to our wildcard SSL setup, you can enter **absolutely any custom prefix** to identify this device. Examples:</p>
-                                <div class="space-y-2">
-                                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                        <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">musab.dns.maliknode.app</pre>
-                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                            <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                        </button>
-                                    </div>
-                                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                        <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">dad.dns.maliknode.app</pre>
-                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                            <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                        </button>
-                                    </div>
-                                    <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                        <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">laptop.dns.maliknode.app</pre>
-                                        <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                            <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Linux -->
+                <a href="https://github.com/WireGuard/wireguard-linux#installation" target="_blank" class="os-card reveal group" style="transition-delay:0.1s">
+                    <div class="os-icon w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.368 1.884 1.43.868.074 1.723-.2 2.438-.468.716-.27 1.347-.534 1.766-.291.217.125.378.307.453.545.074.234.07.51-.006.818-.136.534-.47 1.178-.883 1.748a.424.424 0 00-.074.258c0 .058.009.115.03.168l.003.003c.07.17.2.29.363.335.176.044.355-.014.488-.127.568-.48 1.036-1.076 1.37-1.696.338-.62.548-1.283.548-1.864 0-.41-.09-.79-.275-1.1a1.533 1.533 0 00-.735-.6 3.43 3.43 0 00-.884-.237c-.256-.03-.52-.027-.783-.017-.527.024-1.06.1-1.492.12-.336.015-.613-.028-.8-.18-.2-.167-.268-.438-.265-.836.004-.564.157-1.343.197-2.15.024-.468-.01-.956-.174-1.414a2.88 2.88 0 00-.694-1.078c.002-.054.005-.1.005-.149 0-1.404-.455-2.756-1.244-3.873-.785-1.105-1.906-1.972-3.209-2.404-.663-.222-1.371-.337-2.086-.337z"/></svg>
                     </div>
-                </div>
+                    <h3 class="text-sm font-medium mb-1 text-white">Linux</h3>
+                    <p class="text-xs text-neutral-500">All Distros</p>
+                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
+                        <span>GitHub</span>
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </div>
+                </a>
 
                 <!-- iOS -->
-                <div class="platform-content" id="platform-ios" style="display:none;">
-                    <div class="space-y-8">
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">1</span>
-                            </div>
-                            <div class="w-full">
-                                <h4 class="font-medium mb-2">Generate a .mobileconfig Profile</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">Apple iOS devices require a configuration profile (.mobileconfig) to enable secure DNS. Copy this template XML, save it as `dns.mobileconfig`, and send/install it on your iPhone:</p>
-                                <div class="bg-black/40 rounded-lg p-4 font-mono text-xs text-brand relative max-w-xl w-full">
-                                    <pre class="whitespace-pre-wrap text-left text-[10px] leading-tight select-all max-h-40 overflow-y-auto block pr-10 scrollbar-thin">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-&lt;dict&gt;
-    &lt;key&gt;PayloadContent&lt;/key&gt;
-    &lt;array&gt;
-        &lt;dict&gt;
-            &lt;key&gt;DNSSettings&lt;/key&gt;
-            &lt;dict&gt;
-                &lt;key&gt;DNSProtocol&lt;/key&gt;
-                &lt;string&gt;HTTPS&lt;/string&gt;
-                &lt;key&gt;ServerURL&lt;/key&gt;
-                &lt;string&gt;https://iphone.dns.maliknode.app/dns-query&lt;/string&gt;
-            &lt;/dict&gt;
-            &lt;key&gt;PayloadDescription&lt;/key&gt;
-            &lt;string&gt;Configures Secure DNS-over-HTTPS&lt;/string&gt;
-            &lt;key&gt;PayloadDisplayName&lt;/key&gt;
-            &lt;string&gt;DNSmalik Secure DoH&lt;/string&gt;
-            &lt;key&gt;PayloadIdentifier&lt;/key&gt;
-            &lt;string&gt;com.apple.dnsSettings.managed&lt;/string&gt;
-            &lt;key&gt;PayloadType&lt;/key&gt;
-            &lt;string&gt;com.apple.dnsSettings.managed&lt;/string&gt;
-            &lt;key&gt;PayloadUUID&lt;/key&gt;
-            &lt;string&gt;8A6B3D6E-C1B0-4A3C-9F4D-9B8A7C6D5E4F&lt;/string&gt;
-            &lt;key&gt;PayloadVersion&lt;/key&gt;
-            &lt;integer&gt;1&lt;/integer&gt;
-        &lt;/dict&gt;
-    &lt;/array&gt;
-    &lt;key&gt;PayloadDisplayName&lt;/key&gt;
-    &lt;string&gt;DNSmalik Secure DNS&lt;/string&gt;
-    &lt;key&gt;PayloadIdentifier&lt;/key&gt;
-    &lt;string&gt;org.dnsmalik.secure&lt;/string&gt;
-    &lt;key&gt;PayloadType&lt;/key&gt;
-    &lt;string&gt;Configuration&lt;/string&gt;
-    &lt;key&gt;PayloadUUID&lt;/key&gt;
-    &lt;string&gt;9F8E7D6C-5B4A-3C2B-1A09-8F7E6D5C4B3A&lt;/string&gt;
-    &lt;key&gt;PayloadVersion&lt;/key&gt;
-    &lt;integer&gt;1&lt;/integer&gt;
-&lt;/dict&gt;
-&lt;/plist&gt;</pre>
-                                    <button class="absolute top-3 right-3 copy-setup text-gray-500 hover:text-brand transition-colors" onclick="copyDNSVal(this.parentNode.querySelector('pre').innerText, this)">
-                                        <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">2</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">DoH Configuration Profile (Port 443)</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">Use this URL in your configuration payload (never blocked by ISPs):</p>
-                                <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                    <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">https://iphone.dns.maliknode.app/dns-query</pre>
-                                    <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                        <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex gap-6">
-                            <div class="w-10 h-10 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center shrink-0">
-                                <span class="font-display text-sm text-brand">3</span>
-                            </div>
-                            <div>
-                                <h4 class="font-medium mb-2">DoT Configuration Profile (Port 853)</h4>
-                                <p class="text-gray-400 font-light text-sm mb-3">Alternative Server Name for DNS-over-TLS payload (requires port 853 open):</p>
-                                <div class="bg-black/40 rounded-lg p-4 font-mono text-sm text-brand relative w-full mb-3">
-                                    <pre class="whitespace-pre-wrap break-all text-left select-all pr-10">iphone.dns.maliknode.app</pre>
-                                    <button class="absolute right-4 top-1/2 -translate-y-1/2 copy-setup text-gray-500 hover:text-brand transition-colors">
-                                        <iconify-icon icon="lucide:copy" width="16"></iconify-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                <a href="https://apps.apple.com/us/app/wireguard/id1441195209" target="_blank" class="os-card reveal group" style="transition-delay:0.15s">
+                    <div class="os-icon w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-cyan-400" viewBox="0 0 24 24" fill="currentColor"><path d="M15.769 14.874c-.685 1.045-1.456 2.068-2.36 2.998-.396.408-.82.798-1.296 1.12-.476.32-.999.588-1.578.679a2.628 2.628 0 01-1.706-.218c-.527-.28-.94-.722-1.274-1.218-.671-1.003-1.025-2.206-1.166-3.402-.142-1.207-.08-2.457.193-3.639.273-1.18.776-2.298 1.504-3.22.362-.463.77-.885 1.228-1.24.459-.356.964-.65 1.516-.79a2.55 2.55 0 011.665.064c.517.195.94.552 1.268.99.657.877.937 1.992.99 3.088.053 1.1-.11 2.22-.463 3.268h.179zm-5.487 7.637c.282.155.578.282.883.377a5.68 5.68 0 001.93.276c.652-.006 1.302-.094 1.928-.248 1.252-.31 2.424-.852 3.447-1.596a9.48 9.48 0 002.486-2.586c.3-.447.566-.92.774-1.417.104-.248.193-.503.264-.764.07-.26.124-.528.124-.803v-.035a2.108 2.108 0 00-.052-.398c-.07-.263-.19-.505-.356-.714a2.335 2.335 0 00-.615-.556 4.007 4.007 0 00-.833-.456c-.247-.103-.5-.19-.756-.266a8.393 8.393 0 00-1.016-.223 10.98 10.98 0 00-1.076-.124l-.266-.017c.35.52.625 1.09.816 1.692.19.602.296 1.237.296 1.888 0 .6-.087 1.193-.266 1.756-.18.563-.443 1.094-.786 1.565a5.784 5.784 0 01-1.305 1.233c-.255.177-.524.332-.804.464a5.1 5.1 0 01-.89.313h-.001a3.57 3.57 0 01-.45.088 3.14 3.14 0 01-.454.033c-.307 0-.603-.054-.885-.149a2.77 2.77 0 01-.76-.391 2.6 2.6 0 01-.582-.607 2.38 2.38 0 01-.352-.774 2.31 2.31 0 01-.06-.843c.05-.57.248-1.103.537-1.562.288-.46.668-.856 1.1-1.17.433-.314.915-.548 1.415-.7.502-.152 1.02-.223 1.53-.218l.12.002c-.07-.126-.148-.246-.233-.36a4.13 4.13 0 00-.587-.6 4.207 4.207 0 00-.724-.486 4.19 4.19 0 00-.84-.342 4.29 4.29 0 00-.912-.155c-.312-.02-.627-.01-.935.038a5.1 5.1 0 00-1.8.586c-.296.166-.577.359-.84.578a6.1 6.1 0 00-.742.716c-.23.265-.44.547-.63.843-.19.296-.357.607-.502.928-.146.322-.268.655-.369.996-.1.341-.178.69-.233 1.043a7.63 7.63 0 00-.09 1.07c0 .362.022.725.068 1.083.045.358.113.712.203 1.059.09.347.202.688.335 1.018.133.33.288.65.465.956.177.307.375.6.595.875.22.275.461.532.723.766.261.234.543.447.843.633.3.186.618.346.95.477z"/></svg>
                     </div>
-                </div>
+                    <h3 class="text-sm font-medium mb-1 text-white">iOS</h3>
+                    <p class="text-xs text-neutral-500">15.0+</p>
+                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
+                        <span>App Store</span>
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </div>
+                </a>
+
+                <!-- Android -->
+                <a href="https://play.google.com/store/apps/details?id=com.wireguard.android" target="_blank" class="os-card reveal group" style="transition-delay:0.2s">
+                    <div class="os-icon w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto mb-5">
+                        <svg class="w-7 h-7 text-green-400" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341a.64.64 0 00-.637-.637.64.64 0 00-.637.637.64.64 0 00.637.637.64.64 0 00.637-.637m-10.012 0a.64.64 0 00-.637-.637.64.64 0 00-.637.637.64.64 0 00.637.637.64.64 0 00.637-.637m10.405-6.027l1.872-3.243a.393.393 0 00-.144-.536.393.393 0 00-.536.144l-1.895 3.282C15.632 8.26 13.883 7.847 12 7.847c-1.883 0-3.632.413-5.176 1.114L4.929 5.679a.393.393 0 00-.536-.144.393.393 0 00-.144.536l1.872 3.243C2.688 11.166.345 14.757 0 19.006h24c-.345-4.249-2.688-7.84-6.084-9.692z"/></svg>
+                    </div>
+                    <h3 class="text-sm font-medium mb-1 text-white">Android</h3>
+                    <p class="text-xs text-neutral-500">8.0+</p>
+                    <div class="mt-4 flex items-center justify-center gap-1 text-xs text-neutral-400 group-hover:text-blue-400 transition-colors dynamic-text-hover">
+                        <span>Play Store</span>
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Manual Config & Green custom notification trigger -->
+            <div class="mt-10 text-center reveal">
+                <button onclick="showToast('Config generator coming soon!')" class="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-purple-400 transition-colors cursor-pointer">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    Need a config file? Generate one here
+                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- FAQ SECTION -->
-    <section id="faq" class="relative z-10 py-24 px-6">
-        <div class="max-w-3xl mx-auto">
+    <!-- Everywhere You Need to Be (Server Map Section) -->
+    <section id="servers" class="py-32 relative overflow-hidden border-t border-white/5">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-blue-500/3 rounded-full blur-[150px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
             <div class="text-center mb-16 reveal">
-                <span class="text-xs tracking-[0.3em] uppercase text-brand font-mono mb-4 block">FAQ</span>
-                <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight">Common Questions</h2>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <i data-lucide="map" class="w-3.5 h-3.5 text-blue-400 dynamic-text-color"></i>
+                    <span class="text-xs text-neutral-400 font-medium font-mono">Server Network</span>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white">
+                    Everywhere you<br><span class="text-neutral-500">need to be.</span>
+                </h2>
             </div>
 
-            <div class="space-y-4 reveal">
-                <a href="/faq.html#faq-what-is-dns" class="faq-item glass rounded-xl overflow-hidden gradient-border px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-all duration-300 block">
-                    <span class="font-medium text-sm md:text-base pr-4">What is MALIKNODE DNS and why should I use it?</span>
-                    <iconify-icon icon="lucide:arrow-up-right" width="18" class="text-gray-500 transition-transform duration-300 shrink-0"></iconify-icon>
-                </a>
+            <!-- Map Container -->
+            <div class="relative w-full max-w-4xl mx-auto aspect-[2/1] rounded-3xl bg-white/[0.02] border border-white/5 overflow-hidden reveal">
+                <!-- Simplified world map outline -->
+                <svg class="w-full h-full opacity-20" viewBox="0 0 800 400" fill="none">
+                    <path d="M150 120 Q170 100 200 110 Q230 90 250 100 Q270 95 280 110 Q300 100 310 115 Q300 130 280 135 Q260 150 240 140 Q220 155 200 145 Q180 150 160 140 Q145 135 150 120Z" fill="rgba(255,255,255,0.3)"/>
+                    <path d="M310 105 Q330 95 350 100 Q370 90 390 95 Q410 90 420 100 Q430 110 420 120 Q410 130 390 135 Q370 140 350 130 Q330 135 315 125 Q305 115 310 105Z" fill="rgba(255,255,255,0.3)"/>
+                    <path d="M160 155 Q180 145 200 150 Q220 155 230 170 Q240 190 230 210 Q220 230 200 240 Q180 250 160 240 Q140 230 135 210 Q130 190 140 170 Q145 160 160 155Z" fill="rgba(255,255,255,0.3)"/>
+                    <path d="M350 140 Q370 130 400 135 Q430 140 460 155 Q490 170 510 190 Q530 210 540 240 Q545 270 530 290 Q510 310 480 320 Q450 330 420 325 Q390 320 370 305 Q350 290 340 265 Q330 240 335 215 Q340 190 350 170 Q345 155 350 140Z" fill="rgba(255,255,255,0.3)"/>
+                    <path d="M540 130 Q570 120 600 125 Q640 130 670 145 Q700 160 720 185 Q735 205 740 230 Q745 260 735 280 Q720 300 695 310 Q670 315 645 305 Q620 295 600 275 Q580 255 570 230 Q560 205 555 180 Q550 155 540 130Z" fill="rgba(255,255,255,0.3)"/>
+                    <path d="M680 60 Q700 50 730 55 Q755 60 770 75 Q780 90 775 110 Q765 125 745 130 Q725 135 705 125 Q690 115 682 95 Q675 75 680 60Z" fill="rgba(255,255,255,0.3)"/>
+                </svg>
 
-                <a href="/faq.html#faq-is-free" class="faq-item glass rounded-xl overflow-hidden gradient-border px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-all duration-300 block">
-                    <span class="font-medium text-sm md:text-base pr-4">Is MALIKNODE DNS free to use?</span>
-                    <iconify-icon icon="lucide:arrow-up-right" width="18" class="text-gray-500 transition-transform duration-300 shrink-0"></iconify-icon>
-                </a>
+                <!-- Flashing map dots -->
+                <div class="server-dot" style="top:28%;left:22%;" title="New York"></div>
+                <div class="server-dot" style="top:25%;left:18%;" title="Toronto"></div>
+                <div class="server-dot" style="top:32%;left:14%;" title="Los Angeles"></div>
+                <div class="server-dot" style="top:30%;left:40%;" title="London"></div>
+                <div class="server-dot" style="top:27%;left:43%;" title="Amsterdam"></div>
+                <div class="server-dot" style="top:29%;left:46%;" title="Frankfurt"></div>
+                <div class="server-dot" style="top:35%;left:50%;" title="Istanbul"></div>
+                <div class="server-dot" style="top:40%;left:55%;" title="Dubai"></div>
+                <div class="server-dot" style="top:32%;left:62%;" title="Mumbai"></div>
+                <div class="server-dot" style="top:35%;left:70%;" title="Singapore"></div>
+                <div class="server-dot" style="top:30%;left:76%;" title="Tokyo"></div>
+                <div class="server-dot" style="top:33%;left:80%;" title="Seoul"></div>
+                <div class="server-dot" style="top:52%;left:56%;" title="Nairobi"></div>
+                <div class="server-dot" style="top:65%;left:30%;" title="São Paulo"></div>
+                <div class="server-dot" style="top:72%;left:24%;" title="Buenos Aires"></div>
+                <div class="server-dot" style="top:60%;left:75%;" title="Sydney"></div>
 
-                <a href="/faq.html#faq-slow-internet" class="faq-item glass rounded-xl overflow-hidden gradient-border px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-all duration-300 block">
-                    <span class="font-medium text-sm md:text-base pr-4">Does MALIKNODE DNS slow down my internet?</span>
-                    <iconify-icon icon="lucide:arrow-up-right" width="18" class="text-gray-500 transition-transform duration-300 shrink-0"></iconify-icon>
-                </a>
+                <!-- Legend -->
+                <div class="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-black/40 backdrop-blur-sm border border-white/5">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(34,197,94,0.6)] animate-pulse"></div>
+                    <span class="text-[10px] text-neutral-400 font-mono">Active Nodes</span>
+                </div>
+            </div>
 
-                <a href="/faq.html#faq-data-collected" class="faq-item glass rounded-xl overflow-hidden gradient-border px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-all duration-300 block">
-                    <span class="font-medium text-sm md:text-base pr-4">What data does MALIKNODE DNS collect?</span>
-                    <iconify-icon icon="lucide:arrow-up-right" width="18" class="text-gray-500 transition-transform duration-300 shrink-0"></iconify-icon>
-                </a>
-
-                <a href="/faq.html#faq-devices-supported" class="faq-item glass rounded-xl overflow-hidden gradient-border px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-all duration-300 block">
-                    <span class="font-medium text-sm md:text-base pr-4">Which devices are supported?</span>
-                    <iconify-icon icon="lucide:arrow-up-right" width="18" class="text-gray-500 transition-transform duration-300 shrink-0"></iconify-icon>
-                </a>
+            <!-- Realistic and relevant network info text -->
+            <div class="mt-8 text-center max-w-2xl mx-auto reveal">
+                <p class="text-xs text-neutral-500 leading-relaxed font-mono">
+                    All MalikNode ingress nodes are deployed in enterprise tier-1 carrier-neutral data centers, featuring low-latency peering and direct BGP routing. Dynamic path selection automatically connects you to the optimal location.
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- CTA SECTION -->
-    <section class="relative z-10 py-24 px-6">
-        <div class="max-w-4xl mx-auto reveal">
-            <div class="relative glass rounded-3xl p-12 md:p-20 text-center overflow-hidden gradient-border">
-                <!-- Background glow -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand/10 rounded-full blur-[120px]"></div>
+    <!-- Pricing Section matching dns.html exact HTML & CSS -->
+    <section id="pricing" class="py-32 relative border-t border-white/5">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none"></div>
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-16 reveal">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+                    <i data-lucide="credit-card" class="w-3.5 h-3.5 text-purple-400"></i>
+                    <span class="text-xs text-neutral-400 font-medium">Pricing</span>
+                </div>
+                <h2 class="text-3xl md:text-5xl font-medium tracking-tight text-white">
+                    Simple, honest<br><span class="text-neutral-500">pricing.</span>
+                </h2>
+                <p class="mt-4 text-neutral-400 font-light">No hidden fees. No tricks. Cancel anytime.</p>
 
-                <div class="relative z-10">
-                    <div class="w-20 h-20 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mx-auto mb-8 pulse-ring relative">
-                        <iconify-icon icon="lucide:shield-check" width="36" class="text-brand"></iconify-icon>
-                    </div>
-                    <h2 class="font-display text-3xl md:text-5xl font-medium tracking-tight mb-6">Ready to Take Back<br>Your Privacy?</h2>
-                    <p class="text-gray-400 font-light max-w-lg mx-auto leading-relaxed mb-10">Join thousands of users who trust MALIKNODE DNS for secure, private, and lightning-fast DNS resolution. Setup takes less than a minute.</p>
+                <!-- Pricing Toggle -->
+                <div class="flex items-center justify-center gap-4 mt-8">
+                    <span id="monthlyLabel" class="text-sm text-neutral-400">Monthly</span>
+                    <button id="billingToggle" onclick="toggleBilling()" class="relative w-12 h-7 rounded-full bg-white/10 border border-white/10 transition-colors">
+                        <div id="toggleDot" class="absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform"></div>
+                    </button>
+                    <span id="yearlyLabel" class="text-sm text-neutral-500">Yearly <span class="text-green-400 text-xs">-20%</span></span>
+                </div>
+            </div>
 
-                    <div class="inline-flex items-center gap-3 px-8 py-5 rounded-xl bg-black/40 border border-brand/30 mb-8">
-                        <iconify-icon icon="lucide:server" width="20" class="text-brand"></iconify-icon>
-                        <span class="font-mono text-lg tracking-wide text-white">dns.maliknode.app</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <!-- Plan 1: Free -->
+                <div class="pricing-card reveal">
+                    <div class="text-sm text-neutral-500 font-medium mb-2">Starter</div>
+                    <div class="flex items-baseline gap-1 mb-1">
+                        <span class="text-4xl font-medium text-white">$0</span>
+                        <span class="text-sm text-neutral-500">/mo</span>
                     </div>
+                    <p class="text-xs text-neutral-500 mb-8">Perfect for testing out</p>
+                    <button onclick="showToast('Free starter plan active!')" class="btn-secondary w-full justify-center text-sm mb-8">Get Started</button>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>1 active device</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Local DNS resolutions</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Unbound recursive resolve</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-500"><i data-lucide="x" class="w-4 h-4 text-neutral-600 shrink-0"></i>No remote VPN egress</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-500"><i data-lucide="x" class="w-4 h-4 text-neutral-600 shrink-0"></i>No custom dashboard access</li>
+                    </ul>
+                </div>
 
-                    <div class="block">
-                        <a href="#setup" class="inline-flex items-center gap-2 px-10 py-4 bg-brand hover:bg-red-700 text-white text-sm tracking-widest uppercase font-medium transition-all duration-300 rounded-lg glow-red">
-                            Configure Now
-                            <iconify-icon icon="lucide:arrow-right" width="18"></iconify-icon>
-                        </a>
+                <!-- Plan 2: Pro -->
+                <div class="pricing-card popular reveal" style="transition-delay:0.1s">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-sm text-purple-400 font-medium">Pro</div>
+                        <div class="px-2.5 py-1 rounded-full bg-purple-500/10 text-[10px] text-purple-400 font-medium uppercase tracking-wider">Popular</div>
                     </div>
+                    <div class="flex items-baseline gap-1 mb-1">
+                        <span class="text-4xl font-medium pricing-amount text-white" data-monthly="6.99" data-yearly="5.49">$6.99</span>
+                        <span class="text-sm text-neutral-500">/mo</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 mb-8 pricing-note" data-monthly="Billed monthly" data-yearly="Billed $65/year">Billed monthly</p>
+                    <button onclick="showToast('Redirecting to secure checkout...')" class="btn-primary w-full justify-center text-sm mb-8">Get Pro</button>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-neutral-300"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Up to 5 devices connected</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-300"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Dedicated server instance</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-300"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>50 Mbps bandwidth cap</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-300"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Integrated AdGuard + Unbound</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-300"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Portal dashboard configs</li>
+                    </ul>
+                </div>
+
+                <!-- Plan 3: Business -->
+                <div class="pricing-card reveal" style="transition-delay:0.2s">
+                    <div class="text-sm text-neutral-500 font-medium mb-2">Team</div>
+                    <div class="flex items-baseline gap-1 mb-1">
+                        <span class="text-4xl font-medium pricing-amount text-white" data-monthly="14.99" data-yearly="11.60">$14.99</span>
+                        <span class="text-sm text-neutral-500">/mo</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 mb-8 pricing-note" data-monthly="Billed monthly" data-yearly="Billed $140/year">Billed monthly</p>
+                    <button onclick="showToast('Redirecting to checkout...')" class="btn-secondary w-full justify-center text-sm mb-8">Get Team</button>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Up to 25 devices connected</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Dedicated server instance</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>100 Mbps bandwidth cap</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Full Client Isolation</li>
+                        <li class="flex items-center gap-3 text-sm text-neutral-400"><i data-lucide="check" class="w-4 h-4 text-green-400 shrink-0"></i>Dedicated support channel</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="relative z-10 border-t border-white/5 py-16 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                <div class="md:col-span-2">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-lg animated-gradient flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z" fill="rgba(227, 6, 19, 0.2)" stroke="#E30613" stroke-width="3"/>
-                                <path d="M38 50L46 58L62 42" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+    <!-- FAQ Section -->
+    <section id="faq" class="max-w-4xl mx-auto px-6 py-24 border-t border-white/5">
+        <div class="text-center mb-16">
+            <h2 class="font-display font-extrabold text-3xl text-white mb-2">Common Questions</h2>
+            <p class="text-gray-400">Everything you need to know about MalikNode VPN.</p>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Item 1 -->
+            <div class="faq-item">
+                <button onclick="toggleFaq(this)" class="w-full px-6 py-5 flex items-center justify-between text-left font-medium text-white hover:bg-white/5 transition-colors">
+                    <span>What is a managed WireGuard server?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 faq-chevron"></i>
+                </button>
+                <div class="faq-answer text-sm text-gray-400 leading-relaxed border-t border-white/5">
+                    Traditional WireGuard servers require complex command-line configurations, manual generation of server and client keys, MTU calibrations, and custom firewall configuration. MalikNode automates all system processes, serving clean, ready-to-run configurations and QR codes.
+                </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="faq-item">
+                <button onclick="toggleFaq(this)" class="w-full px-6 py-5 flex items-center justify-between text-left font-medium text-white hover:bg-white/5 transition-colors">
+                    <span>How does client isolation work?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 faq-chevron"></i>
+                </button>
+                <div class="faq-answer text-sm text-gray-400 leading-relaxed border-t border-white/5">
+                    For business environments, letting devices ping each other over a VPN poses a security threat if one machine is compromised. We enforce strict firewall filters inside the WireGuard interface that isolate each client connection. They can route outbound packets to the internet securely, but cannot trace or communicate with other client nodes on the VPN.
+                </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="faq-item">
+                <button onclick="toggleFaq(this)" class="w-full px-6 py-5 flex items-center justify-between text-left font-medium text-white hover:bg-white/5 transition-colors">
+                    <span>What platform clients does MalikNode support?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gray-500 faq-chevron"></i>
+                </button>
+                <div class="faq-answer text-sm text-gray-400 leading-relaxed border-t border-white/5">
+                    Since we utilize native WireGuard configurations, you can use the official, free WireGuard application client available on Android, iOS, Windows, macOS, and Linux to import your configurations directly.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ready? Take back your privacy today. Section completely replicated -->
+    <section class="py-32 relative border-t border-white/5">
+        <div class="max-w-4xl mx-auto px-6 text-center reveal">
+            <h2 class="text-4xl md:text-6xl font-medium tracking-tight text-white mb-6">
+                Ready?<br><span class="text-neutral-500">Take back your privacy today.</span>
+            </h2>
+            <p class="text-neutral-400 font-light max-w-lg mx-auto mb-10 text-sm md:text-base leading-relaxed">
+                Join developers and remote workers who chose privacy without compromise. Start free, upgrade when you're ready.
+            </p>
+            <button onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})" class="btn-primary">
+                Download Now — It's Free
+            </button>
+            <p class="text-xs text-neutral-600 mt-4 leading-relaxed font-mono">
+                No credit card required &middot; Setup in 30 seconds &middot; Cancel anytime.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-zinc-950/40 py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white dynamic-bg-color">
+                            <i data-lucide="shield" class="w-4 h-4 text-white"></i>
                         </div>
-                        <span class="font-display text-xl tracking-wider font-medium">DNS<span class="text-brand">MALIK</span></span>
+                        <span class="font-display font-bold text-sm tracking-tight text-white">MALIK<span class="dynamic-text-color">NODE</span></span>
                     </div>
-                    <p class="text-gray-500 font-light leading-relaxed max-w-md text-sm">Next-generation secure private DNS portal. Military-grade encryption, ad blocking, and universal network defense — all completely free.</p>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Hardened, zero-config WireGuard VPN deployments for remote workers, companies, and privacy enthusiasts.
+                    </p>
                 </div>
-                <div>
-                    <h4 class="font-display text-sm tracking-widest uppercase text-gray-400 mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#features" class="text-sm text-gray-500 hover:text-brand transition-colors">Features</a></li>
-                        <li><a href="#stats" class="text-sm text-gray-500 hover:text-brand transition-colors">Statistics</a></li>
-                        <li><a href="#how-it-works" class="text-sm text-gray-500 hover:text-brand transition-colors">How It Works</a></li>
-                        <li><a href="#setup" class="text-sm text-gray-500 hover:text-brand transition-colors">Setup Guide</a></li>
+                
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Product</h4>
+                    <ul class="space-y-2 text-xs text-gray-500">
+                        <li><a href="#features" class="hover:text-white transition-colors">VPN Features</a></li>
+                        <li><a href="#dns-stack" class="hover:text-white transition-colors">Secure Upstream DNS</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition-colors">Pricing Plans</a></li>
                     </ul>
                 </div>
-                <div>
-                    <h4 class="font-display text-sm tracking-widest uppercase text-gray-400 mb-4">Resources</h4>
-                    <ul class="space-y-2">
-                        <li><a href="/faq.html" class="text-sm text-gray-500 hover:text-brand transition-colors">FAQ</a></li>
-                        <li><a href="/privacy.html" class="text-sm text-gray-500 hover:text-brand transition-colors">Privacy Policy</a></li>
-                        <li><a href="/status.html" class="text-sm text-gray-500 hover:text-brand transition-colors">Status Page</a></li>
-                        <li><a href="/contact.html" class="text-sm text-gray-500 hover:text-brand transition-colors">Contact</a></li>
+
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Resources</h4>
+                    <ul class="space-y-2 text-xs text-gray-500">
+                        <li><a href="https://dns.maliknode.app/" target="_blank" class="hover:text-white transition-colors">Free DNS Portal</a></li>
+                        <li><a href="#connect" class="hover:text-white transition-colors">Client Download Links</a></li>
+                        <li><a href="#faq" class="hover:text-white transition-colors">FAQs</a></li>
                     </ul>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Support</h4>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Need help setting up your network? Email us directly:
+                    </p>
+                    <div class="text-xs">
+                        <a href="mailto:support@maliknode.app" class="text-blue-400 hover:text-white transition-colors font-mono dynamic-text-color font-bold">support@maliknode.app</a>
+                    </div>
                 </div>
             </div>
-            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <p class="text-xs text-gray-600 tracking-wide">&copy; 2025 MALIKNODE DNS. All rights reserved. Your privacy is our priority.</p>
-                <div class="flex items-center gap-4">
-                    <a href="#" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-brand/20 flex items-center justify-center transition-colors duration-300">
-                        <iconify-icon icon="lucide:github" width="16" class="text-gray-500 hover:text-brand"></iconify-icon>
-                    </a>
-                    <a href="#" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-brand/20 flex items-center justify-center transition-colors duration-300">
-                        <iconify-icon icon="lucide:twitter" width="16" class="text-gray-500 hover:text-brand"></iconify-icon>
-                    </a>
-                    <a href="#" class="w-9 h-9 rounded-lg bg-white/5 hover:bg-brand/20 flex items-center justify-center transition-colors duration-300">
-                        <iconify-icon icon="lucide:message-circle" width="16" class="text-gray-500 hover:text-brand"></iconify-icon>
-                    </a>
+            
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+                <span>&copy; 2026 MalikNode VPN. All rights reserved.</span>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-xs text-neutral-500 font-mono">All systems operational</span>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Toast notification -->
-    <div id="toast" class="toast glass-strong rounded-xl px-6 py-4 flex items-center gap-3">
-        <iconify-icon icon="lucide:check-circle" width="20" class="text-green-400"></iconify-icon>
-        <span class="text-sm" id="toastMsg">Copied to clipboard!</span>
-    </div>
-
     <script>
-    // ==================== PARTICLES ====================
-    const particleCanvas = document.getElementById('particles-canvas');
-    const pCtx = particleCanvas.getContext('2d');
-    let particles = [];
-    const PARTICLE_COUNT = 80;
+        // Initialize Lucide icons
+        lucide.createIcons();
 
-    function resizeParticleCanvas() {
-        particleCanvas.width = window.innerWidth;
-        particleCanvas.height = window.innerHeight;
-    }
-    resizeParticleCanvas();
-    window.addEventListener('resize', resizeParticleCanvas);
-
-    class Particle {
-        constructor() {
-            this.reset();
-        }
-        reset() {
-            this.x = Math.random() * particleCanvas.width;
-            this.y = Math.random() * particleCanvas.height;
-            this.size = Math.random() * 1.5 + 0.5;
-            this.speedX = (Math.random() - 0.5) * 0.3;
-            this.speedY = (Math.random() - 0.5) * 0.3;
-            this.opacity = Math.random() * 0.5 + 0.1;
-        }
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            if (this.x < 0 || this.x > particleCanvas.width) this.speedX *= -1;
-            if (this.y < 0 || this.y > particleCanvas.height) this.speedY *= -1;
-        }
-        draw() {
-            pCtx.beginPath();
-            pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            pCtx.fillStyle = `rgba(227, 6, 19, ${this.opacity})`;
-            pCtx.fill();
-        }
-    }
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particles.push(new Particle());
-    }
-
-    function animateParticles() {
-        pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-        particles.forEach(p => { p.update(); p.draw(); });
-
-        // Draw connections
-        for (let i = 0; i < particles.length; i++) {
-            for (let j = i + 1; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 150) {
-                    pCtx.beginPath();
-                    pCtx.strokeStyle = `rgba(227, 6, 19, ${0.05 * (1 - dist / 150)})`;
-                    pCtx.lineWidth = 0.5;
-                    pCtx.moveTo(particles[i].x, particles[i].y);
-                    pCtx.lineTo(particles[j].x, particles[j].y);
-                    pCtx.stroke();
-                }
-            }
-        }
-        requestAnimationFrame(animateParticles);
-    }
-    animateParticles();
-
-    // ==================== 3D GLOBE ====================
-    const globeCanvas = document.getElementById('globe-canvas');
-    let scene, camera, renderer, globe, wireframe;
-
-    function hasWebGL() {
-        try {
-            const testCanvas = document.createElement('canvas');
-            return !!(window.WebGLRenderingContext &&
-                (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
-        } catch (e) {
-            return false;
-        }
-    }
-
-    function initGlobe() {
-        if (!hasWebGL()) {
-            console.warn('WebGL not supported — globe disabled');
-            globeCanvas.style.display = 'none';
-            return;
-        }
-
-        try {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-            camera.position.z = 3;
-
-            renderer = new THREE.WebGLRenderer({
-                canvas: globeCanvas,
-                alpha: true,
-                antialias: true
-            });
-            renderer.setSize(600, 600);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-            // Globe
-            const geometry = new THREE.IcosahedronGeometry(1, 3);
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xE30613,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.25
-            });
-            globe = new THREE.Mesh(geometry, material);
-            scene.add(globe);
-
-            // Inner sphere
-            const innerGeom = new THREE.SphereGeometry(0.95, 32, 32);
-            const innerMat = new THREE.MeshBasicMaterial({
-                color: 0xE30613,
-                transparent: true,
-                opacity: 0.05,
-            });
-            const innerSphere = new THREE.Mesh(innerGeom, innerMat);
-            scene.add(innerSphere);
-
-            // Nodes on globe
-            const nodeGeometry = new THREE.SphereGeometry(0.025, 8, 8);
-            const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0xFF2233 });
-            for (let i = 0; i < 30; i++) {
-                const phi = Math.acos(2 * Math.random() - 1);
-                const theta = 2 * Math.PI * Math.random();
-                const x = 1.01 * Math.sin(phi) * Math.cos(theta);
-                const y = 1.01 * Math.sin(phi) * Math.sin(theta);
-                const z = 1.01 * Math.cos(phi);
-                const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
-                node.position.set(x, y, z);
-                globe.add(node);
-            }
-
-            // Ring
-            const ringGeom = new THREE.RingGeometry(1.4, 1.42, 64);
-            const ringMat = new THREE.MeshBasicMaterial({
-                color: 0xE30613,
-                transparent: true,
-                opacity: 0.18,
-                side: THREE.DoubleSide
-            });
-            const ring = new THREE.Mesh(ringGeom, ringMat);
-            ring.rotation.x = Math.PI * 0.5;
-            scene.add(ring);
-
-            // Second ring
-            const ring2 = ring.clone();
-            ring2.rotation.x = Math.PI * 0.3;
-            ring2.rotation.y = Math.PI * 0.4;
-            scene.add(ring2);
-
-            animateGlobe();
-        } catch (err) {
-            console.warn('Globe init failed:', err);
-            globeCanvas.style.display = 'none';
-        }
-    }
-
-    function animateGlobe() {
-        requestAnimationFrame(animateGlobe);
-        if (globe) {
-            globe.rotation.y += 0.003;
-            globe.rotation.x = Math.sin(Date.now() * 0.0003) * 0.1;
-        }
-        if (renderer && scene && camera) renderer.render(scene, camera);
-    }
-
-    initGlobe();
-
-    // ==================== NAVBAR ====================
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 80) {
-            navbar.classList.add('glass-strong');
-            navbar.classList.remove('glass-strong');
-        }
-    });
-
-    // ==================== MOBILE MENU ====================
-    const menuBtn = document.getElementById('menuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click', () => {
-        menuBtn.classList.toggle('open');
-        mobileMenu.classList.toggle('hidden');
-    });
-    document.querySelectorAll('.mobile-link').forEach(link => {
-        link.addEventListener('click', () => {
-            menuBtn.classList.remove('open');
-            mobileMenu.classList.add('hidden');
-        });
-    });
-
-    // ==================== COPY DNS ====================
-    function copyTextToClipboard(text, btnElement) {
-        function handleSuccess() {
-            showToast('Copied to clipboard!');
-            if (btnElement) {
-                const icon = btnElement.querySelector('iconify-icon');
-                if (icon) {
-                    const originalIcon = icon.getAttribute('icon') || 'lucide:copy';
-                    icon.setAttribute('icon', 'lucide:check');
-                    icon.classList.add('text-green-400');
-                    setTimeout(() => {
-                        icon.setAttribute('icon', originalIcon);
-                        icon.classList.remove('text-green-400');
-                    }, 2000);
-                }
-                btnElement.classList.add('copied-anim');
-                setTimeout(() => {
-                    btnElement.classList.remove('copied-anim');
-                }, 400);
-            }
-        }
-
-        // Try synchronous fallback copy first (highly compatible & runs synchronously in the click handler)
-        const textArea = document.createElement("textarea");
-        textArea.value = text;
-        
-        // Bulletproof viewport positioning for all platforms to prevent scroll-to-bottom behavior
-        const isIOS = navigator.userAgent.match(/ipad|ipod|iphone/i);
-        textArea.style.position = 'fixed';
-        textArea.style.top = '0';
-        textArea.style.left = '-9999px';
-        textArea.style.width = '2em';
-        textArea.style.height = '2em';
-        textArea.style.opacity = '0.01';
-        
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        textArea.setSelectionRange(0, text.length);
-        
-        if (isIOS) {
-            textArea.contentEditable = true;
-            textArea.readOnly = false;
-            const range = document.createRange();
-            range.selectNodeContents(textArea);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            textArea.setSelectionRange(0, 999999);
-        }
-
-        let copied = false;
-        try {
-            copied = document.execCommand('copy');
-        } catch (err) {
-            console.warn('execCommand copy failed:', err);
-        }
-        
-        document.body.removeChild(textArea);
-
-        if (copied) {
-            handleSuccess();
-            return;
-        }
-
-        // Try standard clipboard API as async fallback if execCommand fails
-        try {
-            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-                navigator.clipboard.writeText(text)
-                    .then(handleSuccess)
-                    .catch((err) => {
-                        console.error('All copy methods failed:', err);
-                    });
-            }
-        } catch (err) {
-            console.error('Navigator clipboard failed synchronously:', err);
-        }
-    }
-
-    // Expose to window for inline onclick handlers
-    window.copyDNSVal = copyTextToClipboard;
-
-    // Handle all platform setup copy buttons
-    document.querySelectorAll('.copy-setup').forEach(btn => {
-        // Remove any inline onclick attribute to prevent conflicts
-        btn.removeAttribute('onclick');
-        
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
+        // FAQ accordion function matching dns.html
+        function toggleFaq(btn) {
+            const item = btn.parentElement;
+            const wasActive = item.classList.contains('active');
             
-            // Try to find the text to copy from sibling pre or span
-            let textToCopy = '';
-            const parent = btn.parentNode;
-            if (parent) {
-                const pre = parent.querySelector('pre');
-                const span = parent.querySelector('span');
-                if (pre) {
-                    textToCopy = pre.innerText;
-                } else if (span) {
-                    textToCopy = span.innerText;
-                }
-            }
+            // Close all
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
             
-            if (textToCopy) {
-                copyTextToClipboard(textToCopy, btn);
+            // Open clicked if wasn't active
+            if (!wasActive) item.classList.add('active');
+        }
+
+        // Card mouse tracking
+        function handleCardMouse(e, card) {
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+            card.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+        }
+
+        // Billing toggle
+        let isYearly = false;
+        function toggleBilling() {
+            isYearly = !isYearly;
+            const dot = document.getElementById('toggleDot');
+            const toggle = document.getElementById('billingToggle');
+            const mLabel = document.getElementById('monthlyLabel');
+            const yLabel = document.getElementById('yearlyLabel');
+
+            if (isYearly) {
+                dot.style.transform = 'translateX(20px)';
+                toggle.style.background = 'rgba(168,85,247,0.3)';
+                toggle.style.borderColor = 'rgba(168,85,247,0.4)';
+                mLabel.classList.remove('text-neutral-400');
+                mLabel.classList.add('text-neutral-500');
+                yLabel.classList.remove('text-neutral-500');
+                yLabel.classList.add('text-neutral-400');
             } else {
-                console.error('Could not find text to copy for button:', btn);
+                dot.style.transform = 'translateX(0)';
+                toggle.style.background = 'rgba(255,255,255,0.1)';
+                toggle.style.borderColor = 'rgba(255,255,255,0.1)';
+                mLabel.classList.remove('text-neutral-500');
+                mLabel.classList.add('text-neutral-400');
+                yLabel.classList.remove('text-neutral-400');
+                yLabel.classList.add('text-neutral-500');
             }
-        });
-    });
 
-    const dnsCopy = document.getElementById('dnsCopy');
-    if (dnsCopy) {
-        dnsCopy.addEventListener('click', () => {
-            const copyIcon = document.getElementById('copyIcon');
-            const copyText = document.getElementById('copyText');
-            
-            // Perform copy
-            copyTextToClipboard('dns.maliknode.app', dnsCopy);
-            
-            // Extra UI update for the main button
-            if (copyIcon && copyText) {
-                copyIcon.setAttribute('icon', 'lucide:check');
-                copyIcon.classList.add('text-green-400');
-                copyText.textContent = 'Copied!';
-                setTimeout(() => {
-                    copyIcon.setAttribute('icon', 'lucide:copy');
-                    copyIcon.classList.remove('text-green-400');
-                    copyText.textContent = 'Copy';
-                }, 2000);
+            document.querySelectorAll('.pricing-amount').forEach(el => {
+                const val = isYearly ? el.dataset.yearly : el.dataset.monthly;
+                el.textContent = '$' + val;
+            });
+            document.querySelectorAll('.pricing-note').forEach(el => {
+                el.textContent = isYearly ? el.dataset.yearly : el.dataset.monthly;
+            });
+        }
+
+        // Theme Switcher Logic
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('theme-purple')) {
+                body.classList.remove('theme-purple');
+                localStorage.setItem('theme', 'blue');
+                document.documentElement.style.setProperty('--color-primary', '59, 130, 246');
+                document.documentElement.style.setProperty('--color-primary-hex', '#3b82f6');
+                document.documentElement.style.setProperty('--color-primary-glow', 'rgba(59, 130, 246, 0.15)');
+                document.documentElement.style.setProperty('--gradient-start', '#3b82f6');
+                document.documentElement.style.setProperty('--gradient-end', '#6366f1');
+                document.documentElement.style.setProperty('--scrollbar-thumb', 'rgba(59, 130, 246, 0.4)');
+            } else {
+                body.classList.add('theme-purple');
+                localStorage.setItem('theme', 'purple');
+                document.documentElement.style.setProperty('--color-primary', '168, 85, 247');
+                document.documentElement.style.setProperty('--color-primary-hex', '#a855f7');
+                document.documentElement.style.setProperty('--color-primary-glow', 'rgba(168, 85, 247, 0.15)');
+                document.documentElement.style.setProperty('--gradient-start', '#a855f7');
+                document.documentElement.style.setProperty('--gradient-end', '#3b82f6');
+                document.documentElement.style.setProperty('--scrollbar-thumb', 'rgba(168, 85, 247, 0.4)');
             }
-        });
-    }
+        }
 
-    // ==================== TOAST ====================
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toastMsg').textContent = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'purple') {
+            document.body.classList.add('theme-purple');
+            document.documentElement.style.setProperty('--color-primary', '168, 85, 247');
+            document.documentElement.style.setProperty('--color-primary-hex', '#a855f7');
+            document.documentElement.style.setProperty('--color-primary-glow', 'rgba(168, 85, 247, 0.15)');
+            document.documentElement.style.setProperty('--gradient-start', '#a855f7');
+            document.documentElement.style.setProperty('--gradient-end', '#3b82f6');
+            document.documentElement.style.setProperty('--scrollbar-thumb', 'rgba(168, 85, 247, 0.4)');
+        }
 
-    // ==================== REVEAL ON SCROLL ====================
-    const revealElements = document.querySelectorAll('.reveal');
+        // Toast notification timer
+        let toastTimer;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
 
-    function activateReveal(el) { el.classList.add('active'); }
-
-    if ('IntersectionObserver' in window) {
-        const revealObserver = new IntersectionObserver((entries) => {
+        // Scroll reveal observer
+        const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    activateReveal(entry.target);
-                    revealObserver.unobserve(entry.target);
+                    entry.target.classList.add('visible');
+                    entry.target.querySelectorAll('.speed-fill').forEach(bar => {
+                        setTimeout(() => bar.classList.add('animated'), 200);
+                    });
+                    observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.05, rootMargin: '0px 0px 0px 0px' });
-        revealElements.forEach(el => revealObserver.observe(el));
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-        // Safety fallback: if sections still hidden after 3s (stale cache / observer bug), force-reveal all
-        setTimeout(() => {
-            revealElements.forEach(el => {
-                if (!el.classList.contains('active')) activateReveal(el);
-            });
-        }, 3000);
-    } else {
-        // No IntersectionObserver support — reveal everything immediately
-        revealElements.forEach(el => activateReveal(el));
-    }
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    // ==================== COUNTER ANIMATION ====================
-    const counters = document.querySelectorAll('.counter');
-    const counterObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const el = entry.target;
-                const target = parseFloat(el.dataset.target);
-                const duration = 2000;
-                const start = performance.now();
-
-                function updateCounter(now) {
-                    const elapsed = now - start;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const eased = 1 - Math.pow(1 - progress, 3);
-
-                    let value = target * eased;
-                    if (target >= 1000000) {
-                        el.textContent = (value / 1000000).toFixed(1) + 'M+';
-                    } else if (target >= 1000) {
-                        el.textContent = Math.floor(value).toLocaleString() + '+';
-                    } else {
-                        if (target === 99.99) {
-                            el.textContent = value.toFixed(2) + '%';
-                        } else if (target % 1 === 0) {
-                            el.textContent = Math.floor(value).toLocaleString();
-                        } else {
-                            el.textContent = value.toFixed(1);
+        // Real-time DNS Resolving Flow Animation (ngrok style)
+        function startDNSFlowAnimation() {
+            const container = document.getElementById('dns-flow-container');
+            if (!container) return;
+            
+            // Spawn a query packet every 2 seconds
+            setInterval(() => {
+                const packet = document.createElement('div');
+                packet.className = 'absolute w-3 h-3 rounded-full bg-blue-400 blur-[1px] transition-all duration-[3s] ease-in-out z-20';
+                packet.style.left = '12%';
+                packet.style.top = '52%';
+                packet.style.transform = 'translate(-50%, -50%)';
+                packet.style.opacity = '1';
+                container.appendChild(packet);
+                
+                // Phase 1: Move to AdGuard Home (Node 2)
+                setTimeout(() => {
+                    packet.style.left = '50%';
+                    packet.style.backgroundColor = '#60a5fa'; // Blue
+                }, 100);
+                
+                // Phase 2: Filter check (AdGuard)
+                setTimeout(() => {
+                    const isBlocked = Math.random() > 0.6; // 40% queries are blocked (tracking)
+                    const adguardShield = document.getElementById('adguard-shield');
+                    
+                    if (isBlocked) {
+                        packet.style.backgroundColor = '#ef4444'; // Red (blocked)
+                        if (adguardShield) {
+                            adguardShield.classList.add('bg-red-500/20', 'text-red-400', 'scale-110');
+                            setTimeout(() => adguardShield.classList.remove('bg-red-500/20', 'text-red-400', 'scale-110'), 400);
                         }
+                        // Fade out blocked query packet
+                        setTimeout(() => {
+                            packet.style.opacity = '0';
+                            packet.style.transform = 'translate(-50%, -50%) scale(0)';
+                        }, 400);
+                    } else {
+                        packet.style.backgroundColor = '#10b981'; // Green (passed)
+                        if (adguardShield) {
+                            adguardShield.classList.add('bg-emerald-500/20', 'text-emerald-400', 'scale-110');
+                            setTimeout(() => adguardShield.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'scale-110'), 400);
+                        }
+                        
+                        // Phase 3: Move to Unbound (Node 3)
+                        setTimeout(() => {
+                            packet.style.left = '88%';
+                        }, 100);
+                        
+                        // Phase 4: Resolve at Unbound
+                        setTimeout(() => {
+                            const unboundGlobe = document.getElementById('unbound-globe');
+                            if (unboundGlobe) {
+                                unboundGlobe.classList.add('bg-indigo-500/20', 'text-indigo-400', 'scale-110');
+                                setTimeout(() => unboundGlobe.classList.remove('bg-indigo-500/20', 'text-indigo-400', 'scale-110'), 400);
+                            }
+                            packet.style.opacity = '0';
+                            packet.style.transform = 'translate(-50%, -50%) scale(0)';
+                        }, 1200);
                     }
-
-                    if (progress < 1) requestAnimationFrame(updateCounter);
-                }
-                requestAnimationFrame(updateCounter);
-                counterObserver.unobserve(el);
-            }
-        });
-    }, { threshold: 0.5 });
-    counters.forEach(c => counterObserver.observe(c));
-
-    // ==================== PLATFORM TABS ====================
-    document.querySelectorAll('.platform-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.platform-tab').forEach(t => {
-                t.classList.remove('active');
-                t.style.background = 'transparent';
-                t.style.color = 'rgb(107, 114, 128)';
-            });
-            tab.classList.add('active');
-            tab.style.background = 'rgba(227, 6, 19, 0.2)';
-            tab.style.color = '#E30613';
-
-            document.querySelectorAll('.platform-content').forEach(c => c.style.display = 'none');
-            document.getElementById('platform-' + tab.dataset.platform).style.display = 'block';
-        });
-    });
-
-    // Initialize first tab
-    document.querySelector('.platform-tab.active').style.background = 'rgba(227, 6, 19, 0.2)';
-    document.querySelector('.platform-tab.active').style.color = '#E30613';
-
-    // ==================== FAQ ====================
-    function toggleFAQ(btn) {
-        const content = btn.nextElementSibling;
-        const arrow = btn.querySelector('.faq-arrow');
-        const isOpen = !content.classList.contains('hidden');
-
-        // Close all
-        document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
-        document.querySelectorAll('.faq-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
-
-        if (!isOpen) {
-            content.classList.remove('hidden');
-            arrow.style.transform = 'rotate(180deg)';
-        }
-    }
-
-    // ==================== QUERY CHART ====================
-    const chartCanvas = document.getElementById('queryChart');
-    const ctx = chartCanvas.getContext('2d');
-    const maxHistoryPoints = 40;
-    const statsHistory = Array(maxHistoryPoints).fill().map(() => ({ cpu: 0, mem: 0, net: 0 }));
-
-    function drawChart() {
-        const dpr = window.devicePixelRatio || 1;
-        const width = chartCanvas.width = chartCanvas.offsetWidth * dpr;
-        const height = chartCanvas.height = 200 * dpr;
-        ctx.scale(dpr, dpr);
-        
-        const cssWidth = chartCanvas.offsetWidth;
-        const cssHeight = 200;
-
-        ctx.clearRect(0, 0, cssWidth, cssHeight);
-
-        // Draw enhanced grid lines (both horizontal and vertical)
-        ctx.strokeStyle = 'rgba(255,255,255,0.025)';
-        ctx.lineWidth = 1;
-        
-        // Horizontal lines
-        for (let i = 0; i <= 4; i++) {
-            const y = (cssHeight / 4) * i;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(cssWidth, y);
-            ctx.stroke();
-        }
-        
-        // Vertical lines
-        const vSteps = 10;
-        for (let i = 1; i < vSteps; i++) {
-            const x = (cssWidth / vSteps) * i;
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, cssHeight);
-            ctx.stroke();
-        }
-
-        if (statsHistory.length < 2) return;
-
-        const step = cssWidth / (maxHistoryPoints - 1);
-
-        function drawMetric(key, color, fillGradStart, fillGradEnd) {
-            // Draw Line with bezier smoothing (quadratic curve midpoint interpolation)
-            ctx.beginPath();
-            ctx.moveTo(0, cssHeight - (statsHistory[0][key] / 100) * cssHeight);
-            
-            for (let i = 0; i < statsHistory.length - 1; i++) {
-                const x1 = i * step;
-                const y1 = cssHeight - (statsHistory[i][key] / 100) * cssHeight;
-                const x2 = (i + 1) * step;
-                const y2 = cssHeight - (statsHistory[i + 1][key] / 100) * cssHeight;
-                const xc = (x1 + x2) / 2;
-                const yc = (y1 + y2) / 2;
-                ctx.quadraticCurveTo(x1, y1, xc, yc);
-            }
-            
-            const lastIdx = statsHistory.length - 1;
-            const lastX = lastIdx * step;
-            const lastY = cssHeight - (statsHistory[lastIdx][key] / 100) * cssHeight;
-            ctx.lineTo(lastX, lastY);
-            
-            // Add neon glow
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 8;
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-            ctx.shadowBlur = 0; // reset
-
-            // Area Gradient Fill
-            if (fillGradStart) {
-                ctx.beginPath();
-                ctx.moveTo(0, cssHeight);
-                ctx.lineTo(0, cssHeight - (statsHistory[0][key] / 100) * cssHeight);
+                }, 1300);
                 
-                for (let i = 0; i < statsHistory.length - 1; i++) {
-                    const x1 = i * step;
-                    const y1 = cssHeight - (statsHistory[i][key] / 100) * cssHeight;
-                    const x2 = (i + 1) * step;
-                    const y2 = cssHeight - (statsHistory[i + 1][key] / 100) * cssHeight;
-                    const xc = (x1 + x2) / 2;
-                    const yc = (y1 + y2) / 2;
-                    ctx.quadraticCurveTo(x1, y1, xc, yc);
-                }
+                // Remove from DOM
+                setTimeout(() => {
+                    packet.remove();
+                }, 3500);
                 
-                ctx.lineTo(lastX, lastY);
-                ctx.lineTo(lastX, cssHeight);
-                ctx.closePath();
-                
-                const gradient = ctx.createLinearGradient(0, 0, 0, cssHeight);
-                gradient.addColorStop(0, fillGradStart);
-                gradient.addColorStop(1, fillGradEnd);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-            }
+            }, 1800);
         }
 
-        // Draw RAM (blue), Network (emerald/green), CPU (red)
-        drawMetric('mem', '#3b82f6', 'rgba(59, 130, 246, 0.04)', 'rgba(59, 130, 246, 0)');
-        drawMetric('net', '#10b981', 'rgba(16, 185, 129, 0.02)', 'rgba(16, 185, 129, 0)');
-        drawMetric('cpu', '#E30613', 'rgba(227, 6, 19, 0.12)', 'rgba(227, 6, 19, 0)');
-    }
-
-    // ==================== REAL-TIME METRICS & STATISTICS FROM API ====================
-    async function fetchStats() {
-        try {
-            const res = await fetch('/api/stats');
-            if (!res.ok) throw new Error('Failed to fetch statistics');
-            const data = await res.json();
-
-            // Update Status Progress Bars & Text
-            document.getElementById('cpuText').textContent = Math.round(data.cpu_usage) + '%';
-            document.getElementById('cpuBar').style.width = data.cpu_usage + '%';
-
-            document.getElementById('memText').textContent = Math.round(data.mem_usage) + '%';
-            document.getElementById('memBar').style.width = data.mem_usage + '%';
-
-            document.getElementById('netText').textContent = data.net_speed_text;
-            document.getElementById('netBar').style.width = data.net_usage + '%';
-
-            document.getElementById('cacheText').textContent = Math.round(data.cache_hit_rate) + '%';
-            document.getElementById('cacheBar').style.width = data.cache_hit_rate + '%';
-
-            // Update Active Connections
-            document.getElementById('activeConns').textContent = data.active_conns.toLocaleString();
-
-            // Update Main Stat Counter Badges (if visible and initialized)
-            const statsSection = document.getElementById('stats');
-            if (statsSection) {
-                const badgeElements = statsSection.querySelectorAll('.font-display');
-                if (badgeElements.length >= 4) {
-                    badgeElements[1].textContent = data.avg_latency_ms.toFixed(1);
-                    badgeElements[1].dataset.target = data.avg_latency_ms;
-
-                    badgeElements[2].textContent = data.dns_queries_today.toLocaleString();
-                    badgeElements[2].dataset.target = data.dns_queries_today;
-
-                    badgeElements[3].textContent = data.active_users.toString();
-                    badgeElements[3].dataset.target = data.active_users;
-                }
-            }
-
-            // Update Legend Values
-            const legendCpu = document.getElementById('legendCpu');
-            const legendMem = document.getElementById('legendMem');
-            const legendNet = document.getElementById('legendNet');
-            if (legendCpu) legendCpu.textContent = Math.round(data.cpu_usage) + '%';
-            if (legendMem) legendMem.textContent = Math.round(data.mem_usage) + '%';
-            if (legendNet) legendNet.textContent = data.net_speed_text;
-
-            // Append to stats history
-            statsHistory.push({ cpu: data.cpu_usage, mem: data.mem_usage, net: data.net_usage || 0 });
-            if (statsHistory.length > maxHistoryPoints) {
-                statsHistory.shift();
-            }
-            drawChart();
-        } catch (err) {
-            console.error('Stats fetch error:', err);
-        }
-    }
-
-    // Initial load and periodic refresh
-    fetchStats();
-    setInterval(fetchStats, 1000);
-
-    // ==================== 3D CARD TILT ON MOUSE ====================
-    document.querySelectorAll('.card-3d').forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = (y - centerY) / 20;
-            const rotateY = (centerX - x) / 20;
-            card.querySelector('.card-3d-inner').style.transform =
-                `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
-        });
-        card.addEventListener('mouseleave', () => {
-            card.querySelector('.card-3d-inner').style.transform =
-                'rotateX(0) rotateY(0) translateZ(0)';
-        });
-    });
-
-    // ==================== SMOOTH SCROLL FIX ====================
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-
-
-
-    // ==================== PORTAL LOGON MODAL ====================
-    const loginModal = document.getElementById('loginModal');
-    const loginForm = document.getElementById('loginForm');
-    const adminOptions = document.getElementById('adminOptions');
-    const loginError = document.getElementById('loginError');
-
-    function showLogin() {
-        if (loginModal) loginModal.classList.remove('hidden');
-        if (loginForm) loginForm.classList.remove('hidden');
-        if (adminOptions) adminOptions.classList.add('hidden');
-        if (loginError) loginError.classList.add('hidden');
-        if (loginForm) loginForm.reset();
-    }
-
-    // Navigation logon links automatically redirect to /RealTime.html
-    const closeLoginBtn = document.getElementById('closeLoginBtn');
-    if (closeLoginBtn) {
-        closeLoginBtn.addEventListener('click', () => {
-            if (loginModal) loginModal.classList.add('hidden');
-        });
-    }
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const userVal = document.getElementById('username').value;
-            const passVal = document.getElementById('password').value;
-
-            // REMOVED: Fake client-side password. Real auth enforced by nginx Basic Auth on `/client/` portal
-            loginForm.classList.add('hidden');
-            if (adminOptions) adminOptions.classList.remove('hidden');
-            if (loginError) loginError.classList.add('hidden');
-            if (loginError) {
-                loginError.classList.remove('hidden');
-            }
-        });
-    }
+        // Start animation
+        startDNSFlowAnimation();
     </script>
-
-    <!-- LOGIN MODAL -->
-    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
-        <div class="glass max-w-sm w-full mx-4 rounded-2xl p-6 md:p-8 gradient-border relative">
-            <button id="closeLoginBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
-                <iconify-icon icon="lucide:x" width="20"></iconify-icon>
-            </button>
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 rounded-full bg-brand/20 border border-brand/30 flex items-center justify-center mx-auto mb-3">
-                    <iconify-icon icon="lucide:lock" width="24" class="text-brand"></iconify-icon>
-                </div>
-                <h3 class="font-display text-lg tracking-wider uppercase">Portal Logon</h3>
-                <p class="text-xs text-gray-400 mt-1">Authenticate to access admin consoles</p>
-            </div>
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] uppercase tracking-wider text-gray-400 mb-1 font-mono" for="username">Username</label>
-                    <input class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-brand transition-colors" type="text" id="username" required>
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase tracking-wider text-gray-400 mb-1 font-mono" for="password">Password</label>
-                    <input class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2.5 text-xs focus:outline-none focus:border-brand transition-colors" type="password" id="password" required>
-                </div>
-                <button type="submit" class="w-full py-2.5 bg-brand hover:bg-red-700 text-white text-xs tracking-widest uppercase font-medium transition-all duration-300 rounded-lg">
-                    Authenticate
-                </button>
-                <p id="loginError" class="hidden text-[10px] text-center text-red-500 font-mono mt-1"></p>
-            </form>
-            <div id="adminOptions" class="hidden space-y-3 mt-4 pt-4 border-t border-white/5">
-                <p class="text-xs text-green-400 font-mono text-center mb-2">ACCESS GRANTED</p>
-                <a href="https://dns.maliknode.app:8443" target="_blank" class="w-full py-2.5 border border-white/10 hover:border-brand/40 text-white text-xs tracking-widest uppercase font-medium rounded-lg hover:bg-white/5 flex items-center justify-center gap-2 transition-all">
-                    <iconify-icon icon="lucide:server" width="14"></iconify-icon> AdGuard Console
-                </a>
-                <a href="/vnc" target="_blank" class="w-full py-2.5 border border-white/10 hover:border-brand/40 text-white text-xs tracking-widest uppercase font-medium rounded-lg hover:bg-white/5 flex items-center justify-center gap-2 transition-all">
-                    <iconify-icon icon="lucide:monitor" width="14"></iconify-icon> Remote Desktop
-                </a>
-                <a href="/status.html" target="_blank" class="w-full py-2.5 border border-white/10 hover:border-brand/40 text-white text-xs tracking-widest uppercase font-medium rounded-lg hover:bg-white/5 flex items-center justify-center gap-2 transition-all">
-                    <iconify-icon icon="lucide:activity" width="14"></iconify-icon> System Status
-                </a>
-            </div>
-    </div>
 </body>
 </html>
