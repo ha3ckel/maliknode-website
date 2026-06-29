@@ -296,6 +296,12 @@
         .marquee-wrapper::after { right: 0; background: linear-gradient(to left, #030303, transparent); }
         .marquee-track { display: flex; gap: 40px; animation: marquee 30s linear infinite; }
         .marquee-track-reverse { animation: marquee-reverse 35s linear infinite; }
+    
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .animate-gradient { background-size: 200% 200%; animation: gradient-shift 3s ease infinite; }
     </style>
 </head>
 <body class="bg-dark text-gray-200 font-sans antialiased overflow-x-hidden transition-all duration-500 grid-bg">
@@ -1029,20 +1035,30 @@
 
     <!-- Ready? Take back your privacy today. Section completely replicated -->
     <section class="py-32 relative border-t border-white/5">
-        <div class="max-w-4xl mx-auto px-6 text-center reveal">
-            <h2 class="text-4xl md:text-6xl font-medium tracking-tight text-white mb-6">
-                Ready?<br><span class="text-neutral-500">Take back your privacy today.</span>
-            </h2>
-            <p class="text-neutral-400 font-light max-w-lg mx-auto mb-10 text-sm md:text-base leading-relaxed">
-                Join developers and remote workers who chose privacy without compromise. Start free, upgrade when you're ready.
-            </p>
-            <button onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})" class="btn-primary">
-                Download Now — It's Free
-            </button>
-            <p class="text-xs text-neutral-600 mt-4 leading-relaxed font-mono">
-                No credit card required &middot; Setup in 30 seconds &middot; Cancel anytime.
-            </p>
+      <div class="max-w-4xl mx-auto px-6 text-center relative z-10 reveal">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+          <i data-lucide="rocket" class="w-3.5 h-3.5 text-purple-400"></i>
+          <span class="text-xs text-neutral-400 font-medium">Ready?</span>
         </div>
+
+        <h2 class="text-4xl md:text-6xl lg:text-7xl font-medium tracking-tight leading-[0.9]">
+          Take back your<br>
+          <span class="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent animate-gradient">privacy today.</span>
+        </h2>
+
+        <p class="mt-8 text-neutral-400 font-light text-lg max-w-lg mx-auto">
+          Join thousands who chose privacy without compromise. Start free, upgrade when you're ready.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+          <button class="btn-primary text-base !py-4 !px-10" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            Download Now — It's Free
+          </button>
+        </div>
+
+        <p class="mt-6 text-xs text-neutral-600">No credit card required · Setup in 30 seconds · Cancel anytime</p>
+      </div>
     </section>
 
     <!-- Footer -->
@@ -1051,8 +1067,12 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                 <div class="space-y-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white dynamic-bg-color">
-                            <i data-lucide="shield" class="w-4 h-4 text-white"></i>
+                        <div class="w-8 h-8 rounded-lg animated-logo-bg flex items-center justify-center text-white">
+                            <svg class="w-5 h-5 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z" fill="rgba(227, 6, 19, 0.2)" stroke="#E30613" stroke-width="3"/>
+                                <path d="M38 50L46 58L62 42" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </div>
                         <span class="font-display font-bold text-sm tracking-tight text-white">MALIK<span class="dynamic-text-color font-extrabold">NODE</span></span>
                     </div>
