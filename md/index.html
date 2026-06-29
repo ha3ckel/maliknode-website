@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MalikNode — System Architecture & API Specifications</title>
+    <title>MalikNode — Comprehensive System Architecture & API Blueprint</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8L15 23V53C15 75.5 35 91.5 50 95C65 91.5 85 75.5 85 53V23L50 8Z' stroke='%23E30613' stroke-width='6' fill='none'/%3E%3Cpath d='M50 18L25 29V53C25 69.5 40 81.5 50 84C60 81.5 75 69.5 75 53V29L50 18Z' fill='rgba(227,%206,%2019,%200.2)' stroke='%23E30613' stroke-width='3'/%3E%3Cpath d='M38 50L46 58L62 42' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -80,16 +80,22 @@
                 <i data-lucide="folder" class="w-4 h-4 text-yellow-400"></i> File Directory Map
             </a>
             <a href="#tenant-isolation" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Tenant Separation
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Subnet Separation
             </a>
             <a href="#adguard-isolation" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
                 <i data-lucide="container" class="w-4 h-4 text-purple-400"></i> Isolated AdGuard
             </a>
-            <a href="#api-flows" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
-                <i data-lucide="git-pull-request" class="w-4 h-4 text-cyan-400"></i> API Workflows
+            <a href="#capacity-analysis" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="cpu" class="w-4 h-4 text-red-400"></i> Server Load Capacity
             </a>
-            <a href="#endpoints" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
-                <i data-lucide="code" class="w-4 h-4 text-orange-400"></i> REST API Schemas
+            <a href="#dns-subdomains" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="globe" class="w-4 h-4 text-pink-400"></i> DNS & Wildcard Rules
+            </a>
+            <a href="#multi-vps" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="server" class="w-4 h-4 text-cyan-400"></i> Cluster Scaling (18GB VPS)
+            </a>
+            <a href="#api-flows" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm font-medium text-neutral-400 hover:text-white transition-all">
+                <i data-lucide="git-pull-request" class="w-4 h-4 text-blue-400"></i> API Workflows
             </a>
         </aside>
 
@@ -149,7 +155,7 @@
                             <li>Interface: <span class="text-blue-400">wg1</span></li>
                             <li>Subnet Range: <span class="text-blue-400">10.88.1.0/24</span></li>
                             <li>Tunnel Gateway: <span class="text-blue-400">10.88.1.1</span></li>
-                            <li>UDP Interface Port: <span class="text-blue-400">51821</span></li>
+                            <li>UDP Interface Port: <span class="text-blue-400">51821</span> (Open Publicly)</li>
                         </ul>
                     </div>
                     <div class="p-5 rounded-xl bg-zinc-900/40 border border-white/5 space-y-2 text-left">
@@ -158,9 +164,13 @@
                             <li>Interface: <span class="text-emerald-400">wg2</span></li>
                             <li>Subnet Range: <span class="text-emerald-400">10.88.2.0/24</span></li>
                             <li>Tunnel Gateway: <span class="text-emerald-400">10.88.2.1</span></li>
-                            <li>UDP Interface Port: <span class="text-emerald-400">51822</span></li>
+                            <li>UDP Interface Port: <span class="text-emerald-400">51822</span> (Open Publicly)</li>
                         </ul>
                     </div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-950/60 border border-white/5 text-xs text-neutral-400 leading-relaxed font-mono">
+                    <span class="text-amber-400 font-bold block mb-1">PORT EXPOSURE POLICY:</span>
+                    The listening UDP ports (e.g. 51821) are open to the outside world so clients can complete handshakes. However, internal DNS ports (Port 53 on 10.88.x.1) are routed internally and blocked from public internet exposure.
                 </div>
             </section>
 
@@ -186,10 +196,97 @@ docker run -d \
                 </p>
             </section>
 
-            <!-- SECTION 4: WORKFLOWS -->
+            <!-- SECTION 4: LOAD CAPACITY ANALYSIS -->
+            <section id="capacity-analysis" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="cpu" class="text-red-400"></i> 4. Server Load & Storage Capacity Analysis
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                    <div class="p-5 rounded-xl bg-zinc-900/40 border border-white/5 space-y-2">
+                        <span class="text-white font-bold block uppercase tracking-wider text-[10px]">Current Host: 1-Core CPU / 6GB RAM</span>
+                        <ul class="text-neutral-400 space-y-1">
+                            <li>Max Tunnels: ~150 concurrent active handshakes</li>
+                            <li>WireGuard footprint: Virtually 0% CPU</li>
+                            <li>RAM per AdGuard: ~35 MB</li>
+                            <li>Expected max capacity: 100 users before RAM compression</li>
+                        </ul>
+                    </div>
+                    <div class="p-5 rounded-xl bg-zinc-900/40 border border-white/5 space-y-2">
+                        <span class="text-white font-bold block uppercase tracking-wider text-[10px]">Storage Footprint Optimization</span>
+                        <ul class="text-neutral-400 space-y-1">
+                            <li>AdGuard Binary size: ~30 MB</li>
+                            <li>Query log rotation limit: 24 Hours / 10MB cap</li>
+                            <li>Storage per user: ~45 MB total</li>
+                            <li>Disk load: No additional volumes required</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: WILDCARD DNS RULES -->
+            <section id="dns-subdomains" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="globe" class="text-pink-400"></i> 5. Wildcard Subdomain & DNS Configurations
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    You do not need to register subdomains manually inside Name.com when users sign up. We configure a Wildcard record to automate routing:
+                </p>
+                <div class="p-5 rounded-xl bg-zinc-900/40 border border-white/5 text-xs font-mono text-left space-y-2">
+                    <div><span class="text-zinc-500">DNS TYPE:</span> A Record</div>
+                    <div><span class="text-zinc-500">HOST:</span> <span class="text-white">*</span> (Wildcard target)</div>
+                    <div><span class="text-zinc-500">ANSWER / TARGET IP:</span> 129.153.222.165 (Phoenix Host IP)</div>
+                </div>
+                <p class="text-xs text-zinc-500 leading-relaxed font-light">
+                    When a request hits `abcd.maliknode.app`, Name.com automatically maps it to your Nginx gateway. Nginx extracts the host header and serves the corresponding client folder or proxy interface.
+                </p>
+            </section>
+
+            <!-- SECTION 6: SCALE UP CLUSTER -->
+            <section id="multi-vps" class="space-y-4 scroll-mt-24">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i data-lucide="server" class="text-cyan-400"></i> 6. Horizontal Scaling Cluster (Using your 3-Core / 18GB RAM VPS)
+                </h2>
+                <p class="text-sm text-neutral-400 font-light leading-relaxed">
+                    Since you have a powerful second VPS (3-Core, 18GB RAM) linked via a local private interface network (`10.1.x.x`), we can implement a horizontal cluster topology:
+                </p>
+                
+                <!-- Scaling Topology Visualizer -->
+                <div class="p-6 rounded-2xl bg-zinc-950 border border-white/5 space-y-4">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-6 font-mono text-[11px]">
+                        
+                        <!-- Primary Front Node -->
+                        <div class="p-4 rounded-xl bg-zinc-900 border border-white/10 w-full md:w-56 text-left">
+                            <span class="text-xs font-bold text-white block mb-1">Frontend Controller</span>
+                            <span class="text-zinc-500 block">Current VPS (6GB RAM)</span>
+                            <hr class="border-white/5 my-2">
+                            <span class="text-blue-400 block">&bull; Nginx TLS Gate</span>
+                            <span class="text-blue-400 block">&bull; SQLite DB</span>
+                            <span class="text-blue-400 block">&bull; API Daemon Port 8085</span>
+                        </div>
+
+                        <!-- Private Interconnection -->
+                        <div class="flex flex-col items-center justify-center text-zinc-600">
+                            <i data-lucide="move-right" class="w-6 h-6 hidden md:block"></i>
+                            <span class="text-[9px] uppercase tracking-wider">Private network (10.1.x.x)</span>
+                        </div>
+
+                        <!-- Backend Worker Node -->
+                        <div class="p-4 rounded-xl bg-zinc-900 border border-white/10 w-full md:w-56 text-left border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.05)]">
+                            <span class="text-xs font-bold text-cyan-400 block mb-1">Tunnel Worker Node</span>
+                            <span class="text-zinc-500 block">Second VPS (18GB RAM)</span>
+                            <hr class="border-white/5 my-2">
+                            <span class="text-cyan-400 block">&bull; 500+ WireGuard peers</span>
+                            <span class="text-cyan-400 block">&bull; Docker AdGuard Containers</span>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 7: WORKFLOWS -->
             <section id="api-flows" class="space-y-4 scroll-mt-24">
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i data-lucide="git-pull-request" class="text-cyan-400"></i> 4. API Communication Workflows
+                    <i data-lucide="git-pull-request" class="text-blue-400"></i> 7. API Communication Workflows
                 </h2>
                 <p class="text-sm text-neutral-400 font-light leading-relaxed">
                     When a user makes edits in their browser dashboard, transactions follow structured flows:
@@ -208,45 +305,6 @@ docker run -d \
                 </div>
             </section>
 
-            <!-- SECTION 5: SCHEMAS -->
-            <section id="endpoints" class="space-y-4 scroll-mt-24">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <i data-lucide="code" class="text-orange-400"></i> 5. Central API Controller Schema Specifications
-                </h2>
-
-                <div class="space-y-6">
-                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 text-left space-y-3">
-                        <div class="flex items-center gap-2 text-xs font-bold font-mono">
-                            <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400">POST</span>
-                            <span class="text-white">/api/auth/signup</span>
-                        </div>
-                        <p class="text-xs text-neutral-400 font-light">Registers an account and provisions dedicated WireGuard / AdGuard server instances.</p>
-                        <pre class="p-4 rounded-xl bg-zinc-950 text-[10px] text-blue-400 font-mono">
-{
-  "username": "abcd",
-  "password": "hashed_password",
-  "plan": "Starter",
-  "region": "phoenix"
-}
-                        </pre>
-                    </div>
-
-                    <div class="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 text-left space-y-3">
-                        <div class="flex items-center gap-2 text-xs font-bold font-mono">
-                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400">POST</span>
-                            <span class="text-white">/api/peers</span>
-                        </div>
-                        <p class="text-xs text-neutral-400 font-light">Registers a new peer node inside the user's subnet tunnel configuration.</p>
-                        <pre class="p-4 rounded-xl bg-zinc-950 text-[10px] text-blue-400 font-mono">
-// Headers: Authorization: Bearer &lt;JWT_Token&gt;
-{
-  "device_label": "Musab-iPad"
-}
-                        </pre>
-                    </div>
-                </div>
-            </section>
-
         </main>
     </div>
 
@@ -255,7 +313,7 @@ docker run -d \
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <span>&copy; 2026 MalikNode VPN. System specs.</span>
             <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span class="text-xs text-neutral-500 font-mono">Spec system online</span>
             </div>
         </div>
